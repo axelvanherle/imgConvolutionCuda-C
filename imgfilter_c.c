@@ -39,10 +39,10 @@ void readHeader(FILE *inputBMP, unsigned char *header, FILE *targetBMP)
     fwrite(header, 1, 54, targetBMP); //Schrijft de header weg in targetBMP
 }
 
-void calcHeight(unsigned char *header, signed int *hight) //Functie berekend de hight van de afbeelding
+void calcHeight(unsigned char *header, signed int *height) //Functie berekend de height van de afbeelding
 {
-    *hight = header[25] << 24 | header[24] << 16 | header[23] << 8 | header[22]; //Resultaat: hight = (8 bits header[21]) (8 bits header[20]) (8 bits header[19]) (8 bits header[18])
-    printf("\nhight: %dpx\n", *hight);
+    *height = header[25] << 24 | header[24] << 16 | header[23] << 8 | header[22]; //Resultaat: height = (8 bits header[21]) (8 bits header[20]) (8 bits header[19]) (8 bits header[18])
+    printf("\nheight: %dpx\n", *height);
 }
 
 void calcWidth(unsigned char *header, signed int *width) //Functie berekend de width van de afbeelding
@@ -51,10 +51,10 @@ void calcWidth(unsigned char *header, signed int *width) //Functie berekend de w
     printf("width: %dpx\n", *width);
 }
 
-void cleanup(unsigned char *header, signed int *hight, signed int *width, FILE *inputBMP, FILE *targetBMP)
+void cleanup(unsigned char *header, signed int *height, signed int *width, FILE *inputBMP, FILE *targetBMP)
 {
     free(header);
-    free(hight);
+    free(height);
     free(width);
 
     fclose(inputBMP);
@@ -64,23 +64,23 @@ void cleanup(unsigned char *header, signed int *hight, signed int *width, FILE *
 int main()
 {
     unsigned char *header = (unsigned char *) malloc(54 * sizeof(unsigned char));
-    signed int *hight = (signed int *) malloc(sizeof(signed int));
+    signed int *height = (signed int *) malloc(sizeof(signed int));
     signed int *width = (signed int *) malloc(sizeof(signed int));
 
     FILE *inputBMP = openBMP(); //Opent BMP file
     //FILE *targetBMP = openTargetBMP(); //Opent de BMP Target file
 
     readHeader(inputBMP, header, targetBMP); //Leest de header
-    calcHeight(header, hight); //Berekend hight BMP file
+    calcHeight(header, height); //Berekend height BMP file
     calcWidth(header, width); //Berekend width BMP file
 
-    if(*width % 4 != 0 && *hight % 4 != 0)
+    if(*width % 4 != 0 && *height % 4 != 0)
     {
         printf("Incompatible Image\n");
         exit(-1);
     }
 
-    cleanup(header, hight, width, inputBMP, targetBMP);
+    cleanup(header, height, width, inputBMP, targetBMP);
 
     return 0;
 }
