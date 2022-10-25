@@ -20,6 +20,8 @@ void calcPixels(signed int *height, signed int *width, signed int *numberOfPixel
 void printPixels(unsigned char *imagePixels, signed int *numberOfPixels);
 // Releases all memory we used on the heap.
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
+// Writes the edited pixels in the new file
+void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP);
 
 int main()
 {
@@ -50,7 +52,7 @@ int main()
     /*
      *   insert filter
      */
-
+    writeNewPixels(editedPixels, targetBMP);
     cleanup(header, height, width, numberOfPixels, originalPixels, editedPixels, inputBMP, targetBMP);
 
     return 0;
@@ -117,6 +119,12 @@ void printPixels(unsigned char *imagePixels, signed int *numberOfPixels)
         }
         printf(" %x", imagePixels[i]);
     }
+}
+
+void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP)
+{
+    int offsetHeader = 55; // Header takes first 54 bytes in the new file
+    fwrite(editedPixels, offsetHeader, sizeof(editedPixels), targetBMP);
 }
 
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
