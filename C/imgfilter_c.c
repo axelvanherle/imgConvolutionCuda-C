@@ -127,7 +127,7 @@ void printPixels(unsigned char *imagePixels, signed int *numberOfPixels)
 
 void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP)
 {
-    int offsetHeader = 55; // Header takes first 54 bytes in the new file
+    int offsetHeader = 54; // Header takes first 54 bytes in the new file
     fwrite(editedPixels, offsetHeader, sizeof(editedPixels), targetBMP);
 }
 
