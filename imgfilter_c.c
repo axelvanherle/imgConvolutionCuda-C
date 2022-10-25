@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
 #define INPUT_FILE "Images/image0.bmp"
 #define OUTPUT_FILE "Images/Output.bmp"
