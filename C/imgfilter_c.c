@@ -21,13 +21,13 @@ void cleanup(unsigned char *header, signed int *height, signed int *width, signe
 
 int main()
 {
+    FILE *inputBMP = openBMP();        // Opens the BMP file.
+    FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
     unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
     signed int *height = (signed int *)malloc(sizeof(signed int));
     signed int *width = (signed int *)malloc(sizeof(signed int));
     signed int *numberOfPixels = (signed int *)malloc(sizeof(signed int));
 
-    FILE *inputBMP = openBMP();        // Opens the BMP file.
-    FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
     readHeader(inputBMP, header, targetBMP); // Reads the header.
     calcHeight(header, height);              // Calculates height BMP file.
     calcWidth(header, width);                // Calculates width BMP file
