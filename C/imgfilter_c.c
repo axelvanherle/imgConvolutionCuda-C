@@ -18,13 +18,16 @@ void calcWidth(unsigned char *header, signed int *width);
 void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels);
 // Prints the pixels from whatever char array (assuming its a bmp image thats divideable by 4 without header) we input.
 void printPixels(unsigned char *imagePixels, signed int *numberOfPixels);
+// Writes the edited pixels in the new file.
+void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP);
+// Prints the info of the file we are manipulating.
+void printFileInfo(void);
 // Releases all memory we used on the heap.
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
-// Writes the edited pixels in the new file
-void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP);
 
 int main()
 {
+    printFileInfo();
     FILE *inputBMP = openBMP();        // Opens the BMP file.
     FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
     unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
@@ -86,9 +89,9 @@ FILE *openTargetBMP() // Funtion opens the target image.
 
 void readHeader(FILE *inputBMP, unsigned char *header, FILE *targetBMP)
 {
-    fread(header, 1, 54, inputBMP);     // Put the first 54 bytes of inputBMP in the header.
+    fread(header, 1, 54, inputBMP); // Put the first 54 bytes of inputBMP in the header.
 
-    fwrite(header, 1, 54, targetBMP);   // Writes away the header in targetBMP.
+    fwrite(header, 1, 54, targetBMP); // Writes away the header in targetBMP.
 }
 
 void calcHeight(unsigned char *header, signed int *height) // Function calculates the height of the image.
@@ -111,6 +114,7 @@ void calcPixels(signed int *height, signed int *width, signed int *numberOfPixel
 
 void printPixels(unsigned char *imagePixels, signed int *numberOfPixels)
 {
+    printf("image characteristics: \n");
     for (int i = 0; i < *numberOfPixels * 3; i++)
     {
         if (i % 3 == 0)
@@ -125,6 +129,12 @@ void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP)
 {
     int offsetHeader = 55; // Header takes first 54 bytes in the new file
     fwrite(editedPixels, offsetHeader, sizeof(editedPixels), targetBMP);
+}
+
+void printFileInfo(void)
+{
+    printf("input file: %s\n", INPUT_FILE);
+    printf("output file: %s\n", OUTPUT_FILE);
 }
 
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
