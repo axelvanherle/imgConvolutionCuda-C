@@ -38,6 +38,10 @@ int main()
         exit(-1);
     }
 
+    /*
+        insert filter
+    */
+
     cleanup(header, height, width, inputBMP, targetBMP);
 
     return 0;
