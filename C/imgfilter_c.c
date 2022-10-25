@@ -17,7 +17,7 @@ void calcWidth(unsigned char *header, signed int *width);
 // Calculates the number of pixels and stores it in numberOfPixels.
 void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels);
 // Releases all memory we used on the heap.
-void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels,  unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
+void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
 
 int main()
 {
@@ -104,7 +104,7 @@ void calcPixels(signed int *height, signed int *width, signed int *numberOfPixel
     printf("Total number of pixels: %dpx\n", *numberOfPixels);
 }
 
-void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels,  unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
+void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
 {
     free(header);
     free(height);
