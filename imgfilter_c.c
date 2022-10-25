@@ -24,7 +24,7 @@ int main()
     unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
     signed int *height = (signed int *)malloc(sizeof(signed int));
     signed int *width = (signed int *)malloc(sizeof(signed int));
-    
+
     FILE *inputBMP = openBMP();        // Opens the BMP file.
     FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
 
