@@ -3,8 +3,8 @@
 #include <string.h>
 #include <math.h>
 
-#define INPUT_FILE "Images/testImage.bmp"
-#define OUTPUT_FILE "Images/Output.bmp" 4
+#define INPUT_FILE "Images/image0.bmp"
+#define OUTPUT_FILE "Images/Output.bmp"
 
 // Function opens the image.
 FILE *openBMP(void);
@@ -24,7 +24,7 @@ int main()
     unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
     signed int *height = (signed int *)malloc(sizeof(signed int));
     signed int *width = (signed int *)malloc(sizeof(signed int));
-
+    
     FILE *inputBMP = openBMP();        // Opens the BMP file.
     FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
 
