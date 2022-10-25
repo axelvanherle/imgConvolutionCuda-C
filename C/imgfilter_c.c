@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INPUT_FILE "Images/image0.bmp"
+#define INPUT_FILE "Images/test.bmp"
 #define OUTPUT_FILE "Images/Output.bmp"
 
 // Function opens the image.
@@ -16,6 +16,8 @@ void calcHeight(unsigned char *header, signed int *height);
 void calcWidth(unsigned char *header, signed int *width);
 // Calculates the number of pixels and stores it in numberOfPixels.
 void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels);
+// Prints the pixels in whatever char array we input.
+void printPixels(unsigned char *imagePixels, signed int *numberOfPixels);
 // Releases all memory we used on the heap.
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
 
@@ -43,14 +45,8 @@ int main()
     calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
     unsigned char *originalPixels = (unsigned char *)malloc(*numberOfPixels * 3);
     unsigned char *editedPixels = (unsigned char *)malloc(*numberOfPixels * 3);
-    fread(originalPixels, 1, *numberOfPixels*3, inputBMP);
-
-    for (size_t i = 0; i < *numberOfPixels; i++)
-    {
-        printf("%x\n",originalPixels[i]);
-    }
-    
-
+    fread(originalPixels, 1, *numberOfPixels * 3, inputBMP);
+    printPixels(originalPixels, numberOfPixels);
     /*
      *   insert filter
      */
@@ -109,6 +105,18 @@ void calcPixels(signed int *height, signed int *width, signed int *numberOfPixel
 {
     *numberOfPixels = *height * *width;
     printf("Total number of pixels: %dpx\n", *numberOfPixels);
+}
+
+void printPixels(unsigned char *imagePixels, signed int *numberOfPixels)
+{
+    for (int i = 0; i < *numberOfPixels * 3; i++)
+    {
+        if (i % 3 == 0)
+        {
+            printf("\n");
+        }
+        printf(" %x", imagePixels[i]);
+    }
 }
 
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
