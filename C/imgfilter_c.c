@@ -17,7 +17,7 @@ void calcWidth(unsigned char *header, signed int *width);
 // Calculates the number of pixels and stores it in numberOfPixels.
 void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels);
 // Releases all memory we used on the heap.
-void cleanup(unsigned char *header, signed int *height, signed int *width, FILE *inputBMP, FILE *targetBMP);
+void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels,  unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
 
 int main()
 {
@@ -28,23 +28,23 @@ int main()
 
     FILE *inputBMP = openBMP();        // Opens the BMP file.
     FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
-
-    readHeader(inputBMP, header, targetBMP);   // Reads the header.
-    calcHeight(header, height);                // Calculates height BMP file.
-    calcWidth(header, width);                  // Calculates width BMP file
-    calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
-
+    readHeader(inputBMP, header, targetBMP); // Reads the header.
+    calcHeight(header, height);              // Calculates height BMP file.
+    calcWidth(header, width);                // Calculates width BMP file
     if (*width % 4 != 0 && *height % 4 != 0)
     {
         printf("Incompatible Image\n");
         exit(-1);
     }
+    calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
+    unsigned char *originalPixels = (unsigned char *)malloc(*numberOfPixels * 3);
+    unsigned char *editedPixels = (unsigned char *)malloc(*numberOfPixels * 3);
 
     /*
      *   insert filter
      */
-    
-    cleanup(header, height, width, inputBMP, targetBMP);
+
+    cleanup(header, height, width, numberOfPixels, originalPixels, editedPixels, inputBMP, targetBMP);
 
     return 0;
 }
@@ -100,11 +100,14 @@ void calcPixels(signed int *height, signed int *width, signed int *numberOfPixel
     printf("Total number of pixels: %dpx\n", *numberOfPixels);
 }
 
-void cleanup(unsigned char *header, signed int *height, signed int *width, FILE *inputBMP, FILE *targetBMP)
+void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels,  unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
 {
     free(header);
     free(height);
     free(width);
+    free(numberOfPixels);
+    free(originalPixels);
+    free(editedPixels);
 
     fclose(inputBMP);
     fclose(targetBMP);
