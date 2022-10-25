@@ -84,9 +84,9 @@ FILE *openTargetBMP() // Funtion opens the target image.
 
 void readHeader(FILE *inputBMP, unsigned char *header, FILE *targetBMP)
 {
-    fread(header, 1, 54, inputBMP); // Put the first 54 bytes of inputBMP in the header.
+    fread(header, 1, 54, inputBMP);     // Put the first 54 bytes of inputBMP in the header.
 
-    fwrite(header, 1, 54, targetBMP); // Writes away the header in targetBMP.
+    fwrite(header, 1, 54, targetBMP);   // Writes away the header in targetBMP.
 }
 
 void calcHeight(unsigned char *header, signed int *height) // Function calculates the height of the image.
