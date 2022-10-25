@@ -51,6 +51,16 @@ void calcWidth(unsigned char *header, signed int *breedte) //Functie berekend de
     printf("Breedte: %dpx\n", *breedte);
 }
 
+void cleanup(unsigned char *header, signed int *hoogte, signed int *breedte, FILE *inputBMP, FILE *targetBMP)
+{
+    free(header);
+    free(hoogte);
+    free(breedte);
+
+    fclose(inputBMP);
+    fclose(targetBMP);
+}
+
 int main()
 {
     unsigned char *header = (unsigned char *) malloc(54 * sizeof(unsigned char));
@@ -69,6 +79,8 @@ int main()
         printf("Incompatible Image\n");
         exit(-1);
     }
+
+    cleanup(header, hoogte, breedte, inputBMP, targetBMP);
 
     return 0;
 }
