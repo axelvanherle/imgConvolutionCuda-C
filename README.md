@@ -1,6 +1,6 @@
 # imgConvolutionCuda-C
 
-A program written by Axel Vanherle, Sem Kirkels and Nathan Bruggeman in C using CUDA that manipulates a image using convolution.
+An application written by Axel Vanherle, Sem Kirkels and Nathan Bruggeman in C using CUDA that manipulates a image using convolution.
 
 ### What is it?
 
