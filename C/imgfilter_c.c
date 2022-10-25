@@ -15,7 +15,7 @@ void calcHeight(unsigned char *header, signed int *height);
 // Function calculates the width of the image.
 void calcWidth(unsigned char *header, signed int *width);
 // Calculates the number of pixels and stores it in numberOfPixels.
-void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels);
+void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels)
 // Releases all memory we used on the heap.
 void cleanup(unsigned char *header, signed int *height, signed int *width, FILE *inputBMP, FILE *targetBMP);
 
@@ -24,7 +24,7 @@ int main()
     unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
     signed int *height = (signed int *)malloc(sizeof(signed int));
     signed int *width = (signed int *)malloc(sizeof(signed int));
-    signed int *numberOfPixels = (signed int *)malloc(sizeof(signed int));
+    signed int *numberOfPixels = (signed int *) malloc(sizeof(signed int));
 
     FILE *inputBMP = openBMP();                 // Opens the BMP file.
     FILE *targetBMP = openTargetBMP();          // Opens the BMP output file.
@@ -94,7 +94,7 @@ void calcWidth(unsigned char *header, signed int *width) // Function calculates 
     printf("width: %dpx\n", *width);
 }
 
-void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels) // Calculates the number of pixels.
+void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels)
 {
     *numberOfPixels = *height * *width;
     printf("Total number of pixels: %dpx\n", *numberOfPixels);
