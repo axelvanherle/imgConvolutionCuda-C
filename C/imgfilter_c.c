@@ -34,6 +34,10 @@ int main()
     if (*width % 4 != 0 && *height % 4 != 0)
     {
         printf("Incompatible Image\n");
+        fclose(inputBMP);
+        fclose(targetBMP);
+        free(width);
+        free(height);
         exit(-1);
     }
     calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
