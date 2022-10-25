@@ -4,7 +4,44 @@
 #include <math.h>
 
 #define INPUT_FILE "Images/testImage.bmp"
-#define OUTPUT_FILE "Images/Output.bmp"
+#define OUTPUT_FILE "Images/Output.bmp" 4
+
+// Function opens the image.
+FILE *openBMP(void);
+// Funtion opens the target image.
+FILE *openTargetBMP(void);
+// Put the first 54 bytes of inputBMP in the header and writes away the header in targetBMP.
+void readHeader(FILE *inputBMP, unsigned char *header, FILE *targetBMP);
+// Function calculates the height of the image.
+void calcHeight(unsigned char *header, signed int *height);
+// Function calculates the width of the image.
+void calcWidth(unsigned char *header, signed int *width);
+// Releases all memory we used on the heap.
+void cleanup(unsigned char *header, signed int *height, signed int *width, FILE *inputBMP, FILE *targetBMP);
+
+int main()
+{
+    unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
+    signed int *height = (signed int *)malloc(sizeof(signed int));
+    signed int *width = (signed int *)malloc(sizeof(signed int));
+
+    FILE *inputBMP = openBMP();        // Opens the BMP file.
+    FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
+
+    readHeader(inputBMP, header, targetBMP); // Reads the header.
+    calcHeight(header, height);              // Calculates height BMP file.
+    calcWidth(header, width);                // Calculates width BMP file
+
+    if (*width % 4 != 0 && *height % 4 != 0)
+    {
+        printf("Incompatible Image\n");
+        exit(-1);
+    }
+
+    cleanup(header, height, width, inputBMP, targetBMP);
+
+    return 0;
+}
 
 FILE *openBMP() // Function opens the image.
 {
@@ -34,7 +71,7 @@ FILE *openTargetBMP() // Funtion opens the target image.
 
 void readHeader(FILE *inputBMP, unsigned char *header, FILE *targetBMP)
 {
-    fread(header, 1, 54, inputBMP); // Put the first 54 bites of inputBMP in the header.
+    fread(header, 1, 54, inputBMP); // Put the first 54 bytes of inputBMP in the header.
 
     fwrite(header, 1, 54, targetBMP); // Writes away the header in targetBMP.
 }
@@ -59,28 +96,4 @@ void cleanup(unsigned char *header, signed int *height, signed int *width, FILE 
 
     fclose(inputBMP);
     fclose(targetBMP);
-}
-
-int main()
-{
-    unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
-    signed int *height = (signed int *)malloc(sizeof(signed int));
-    signed int *width = (signed int *)malloc(sizeof(signed int));
-
-    FILE *inputBMP = openBMP(); // Opens the BMP file.
-    FILE *targetBMP = openTargetBMP(); //Opens the BMP output file.
-
-    readHeader(inputBMP, header, targetBMP); // Reads the header.
-    calcHeight(header, height);              // Calculates height BMP file.
-    calcWidth(header, width);                // Calculates width BMP file
-
-    if (*width % 4 != 0 && *height % 4 != 0)
-    {
-        printf("Incompatible Image\n");
-        exit(-1);
-    }
-
-    cleanup(header, height, width, inputBMP, targetBMP);
-
-    return 0;
 }
