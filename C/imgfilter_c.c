@@ -16,7 +16,7 @@ void calcHeight(unsigned char *header, signed int *height);
 void calcWidth(unsigned char *header, signed int *width);
 // Calculates the number of pixels and stores it in numberOfPixels.
 void calcPixels(signed int *height, signed int *width, signed int *numberOfPixels);
-// Prints the pixels in whatever char array we input.
+// Prints the pixels from whatever char array (assuming its a bmp image thats divideable by 4 without header) we input.
 void printPixels(unsigned char *imagePixels, signed int *numberOfPixels);
 // Releases all memory we used on the heap.
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP);
