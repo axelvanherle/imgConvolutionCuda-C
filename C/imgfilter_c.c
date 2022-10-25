@@ -41,7 +41,7 @@ int main()
     }
 
     /*
-        insert filter
+    *   insert filter
     */
 
     cleanup(header, height, width, inputBMP, targetBMP);
