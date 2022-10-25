@@ -39,23 +39,23 @@ void readHeader(FILE *inputBMP, unsigned char *header, FILE *targetBMP)
     fwrite(header, 1, 54, targetBMP); //Schrijft de header weg in targetBMP
 }
 
-void calcHeight(unsigned char *header, signed int *hoogte) //Functie berekend de hoogte van de afbeelding
+void calcHeight(unsigned char *header, signed int *hight) //Functie berekend de hight van de afbeelding
 {
-    *hoogte = header[25] << 24 | header[24] << 16 | header[23] << 8 | header[22]; //Resultaat: hoogte = (8 bits header[21]) (8 bits header[20]) (8 bits header[19]) (8 bits header[18])
-    printf("\nHoogte: %dpx\n", *hoogte);
+    *hight = header[25] << 24 | header[24] << 16 | header[23] << 8 | header[22]; //Resultaat: hight = (8 bits header[21]) (8 bits header[20]) (8 bits header[19]) (8 bits header[18])
+    printf("\nhight: %dpx\n", *hight);
 }
 
-void calcWidth(unsigned char *header, signed int *breedte) //Functie berekend de breedte van de afbeelding
+void calcWidth(unsigned char *header, signed int *width) //Functie berekend de width van de afbeelding
 {
-    *breedte = header[21] << 24 | header[20] << 16 | header[19] << 8 | header[18]; //Resultaat: breedte = (8 bits header[21]) (8 bits header[20]) (8 bits header[19]) (8 bits header[18])
-    printf("Breedte: %dpx\n", *breedte);
+    *width = header[21] << 24 | header[20] << 16 | header[19] << 8 | header[18]; //Resultaat: width = (8 bits header[21]) (8 bits header[20]) (8 bits header[19]) (8 bits header[18])
+    printf("width: %dpx\n", *width);
 }
 
-void cleanup(unsigned char *header, signed int *hoogte, signed int *breedte, FILE *inputBMP, FILE *targetBMP)
+void cleanup(unsigned char *header, signed int *hight, signed int *width, FILE *inputBMP, FILE *targetBMP)
 {
     free(header);
-    free(hoogte);
-    free(breedte);
+    free(hight);
+    free(width);
 
     fclose(inputBMP);
     fclose(targetBMP);
@@ -64,23 +64,23 @@ void cleanup(unsigned char *header, signed int *hoogte, signed int *breedte, FIL
 int main()
 {
     unsigned char *header = (unsigned char *) malloc(54 * sizeof(unsigned char));
-    signed int *hoogte = (signed int *) malloc(sizeof(signed int));
-    signed int *breedte = (signed int *) malloc(sizeof(signed int));
+    signed int *hight = (signed int *) malloc(sizeof(signed int));
+    signed int *width = (signed int *) malloc(sizeof(signed int));
 
     FILE *inputBMP = openBMP(); //Opent BMP file
-    FILE *targetBMP = openTargetBMP(); //Opent de BMP Target file
+    //FILE *targetBMP = openTargetBMP(); //Opent de BMP Target file
 
     readHeader(inputBMP, header, targetBMP); //Leest de header
-    calcHeight(header, hoogte); //Berekend hoogte BMP file
-    calcWidth(header, breedte); //Berekend breedte BMP file
+    calcHeight(header, hight); //Berekend hight BMP file
+    calcWidth(header, width); //Berekend width BMP file
 
-    if(*breedte % 4 != 0 && *hoogte % 4 != 0)
+    if(*width % 4 != 0 && *hight % 4 != 0)
     {
         printf("Incompatible Image\n");
         exit(-1);
     }
 
-    cleanup(header, hoogte, breedte, inputBMP, targetBMP);
+    cleanup(header, hight, width, inputBMP, targetBMP);
 
     return 0;
 }
