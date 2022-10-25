@@ -43,6 +43,13 @@ int main()
     calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
     unsigned char *originalPixels = (unsigned char *)malloc(*numberOfPixels * 3);
     unsigned char *editedPixels = (unsigned char *)malloc(*numberOfPixels * 3);
+    fread(originalPixels, 1, *numberOfPixels*3, inputBMP);
+
+    for (size_t i = 0; i < *numberOfPixels; i++)
+    {
+        printf("%x\n",originalPixels[i]);
+    }
+    
 
     /*
      *   insert filter
