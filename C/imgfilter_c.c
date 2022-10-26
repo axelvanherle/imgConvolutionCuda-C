@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
 
-#define INPUT_FILE "Images/test.bmp"
+#define INPUT_FILE "Images/image8.bmp"
 #define OUTPUT_FILE "Images/Output.bmp"
 
 // Function opens the image.
@@ -19,7 +21,7 @@ void calcPixels(signed int *height, signed int *width, signed int *numberOfPixel
 // Prints the pixels from whatever char array (assuming its a bmp image thats divideable by 4 without header) we input.
 void printPixels(unsigned char *imagePixels, signed int *numberOfPixels);
 // Writes the edited pixels in the new file.
-void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP);
+void writeNewPixels(unsigned char *editedPixels, signed int *numberOfPixels, FILE *targetBMP);
 // Prints the info of the file we are manipulating.
 void printFileInfo(void);
 // Releases all memory we used on the heap.
@@ -28,16 +30,17 @@ void cleanup(unsigned char *header, signed int *height, signed int *width, signe
 int main()
 {
     printFileInfo();
+
     FILE *inputBMP = openBMP();        // Opens the BMP file.
     FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
     unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
     signed int *height = (signed int *)malloc(sizeof(signed int));
     signed int *width = (signed int *)malloc(sizeof(signed int));
     signed int *numberOfPixels = (signed int *)malloc(sizeof(signed int));
-
     readHeader(inputBMP, header, targetBMP); // Reads the header.
     calcHeight(header, height);              // Calculates height BMP file.
     calcWidth(header, width);                // Calculates width BMP file
+    
     if (*width % 4 != 0 && *height % 4 != 0)
     {
         printf("Incompatible Image\n");
@@ -50,12 +53,12 @@ int main()
     calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
     unsigned char *originalPixels = (unsigned char *)malloc(*numberOfPixels * 3);
     unsigned char *editedPixels = (unsigned char *)malloc(*numberOfPixels * 3);
-    fread(originalPixels, 1, *numberOfPixels * 3, inputBMP);
-    printPixels(originalPixels, numberOfPixels);
-    /*
-     *   insert filter
-     */
-    writeNewPixels(editedPixels, targetBMP);
+    fread(originalPixels, 1, (*numberOfPixels * 3), inputBMP);
+    //printPixels(originalPixels, numberOfPixels);
+
+    // instert filter
+
+    writeNewPixels(originalPixels, numberOfPixels, targetBMP);
     cleanup(header, height, width, numberOfPixels, originalPixels, editedPixels, inputBMP, targetBMP);
 
     return 0;
@@ -117,7 +120,7 @@ void printPixels(unsigned char *imagePixels, signed int *numberOfPixels)
     printf("image characteristics: \n");
     for (int i = 0; i < *numberOfPixels * 3; i++)
     {
-        if (i % 3 == 0)
+        if (i % 16 == 0)
         {
             printf("\n");
         }
@@ -125,10 +128,11 @@ void printPixels(unsigned char *imagePixels, signed int *numberOfPixels)
     }
 }
 
-void writeNewPixels(unsigned char *editedPixels, FILE *targetBMP)
+void writeNewPixels(unsigned char *editedPixels, signed int *numberOfPixels, FILE *targetBMP)
 {
-    int offsetHeader = 54; // Header takes first 54 bytes in the new file
-    fwrite(editedPixels, offsetHeader, sizeof(editedPixels), targetBMP);
+    uint8_t offsetHeader = 54; // Header takes first 54 bytes in the new file
+    fseek(targetBMP, offsetHeader, SEEK_SET);
+    fwrite(editedPixels, 1, (3 * (*numberOfPixels)), targetBMP);
 }
 
 void printFileInfo(void)
