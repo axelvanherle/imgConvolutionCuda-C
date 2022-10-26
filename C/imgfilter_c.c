@@ -33,14 +33,17 @@ int main()
 
     FILE *inputBMP = openBMP();        // Opens the BMP file.
     FILE *targetBMP = openTargetBMP(); // Opens the BMP output file.
-    unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char));
-    signed int *height = (signed int *)malloc(sizeof(signed int));
-    signed int *width = (signed int *)malloc(sizeof(signed int));
-    signed int *numberOfPixels = (signed int *)malloc(sizeof(signed int));
+
+    // Variable Declaration.
+    unsigned char *header = (unsigned char *)malloc(54 * sizeof(unsigned char)); // Used to save the header from the BMP image.
+    signed int *height = (signed int *)malloc(sizeof(signed int));               // Used to save the height of the original image.
+    signed int *width = (signed int *)malloc(sizeof(signed int));                // Used to save the height of the original image.
+    signed int *numberOfPixels = (signed int *)malloc(sizeof(signed int));       // Used to save the total number of pixels from the original image.
+
     readHeader(inputBMP, header, targetBMP); // Reads the header.
     calcHeight(header, height);              // Calculates height BMP file.
     calcWidth(header, width);                // Calculates width BMP file
-    
+    // This checks if the pixels from the BMP image are divisible by 4. If they arent, the image handeling gets difficult.
     if (*width % 4 != 0 && *height % 4 != 0)
     {
         printf("Incompatible Image\n");
@@ -50,16 +53,19 @@ int main()
         free(height);
         exit(-1);
     }
+
     calcPixels(height, width, numberOfPixels); // Calculates the number of pixels.
-    unsigned char *originalPixels = (unsigned char *)malloc(*numberOfPixels * 3);
-    unsigned char *editedPixels = (unsigned char *)malloc(*numberOfPixels * 3);
-    fread(originalPixels, 1, (*numberOfPixels * 3), inputBMP);
-    //printPixels(originalPixels, numberOfPixels);
 
-    // instert filter
+    unsigned char *originalPixels = (unsigned char *)malloc(*numberOfPixels * 3); // Used to save the "pixels" from the original image.
+    unsigned char *editedPixels = (unsigned char *)malloc(*numberOfPixels * 3);   // Used to save the "pixels" from the original image that we edited before convection.
 
-    writeNewPixels(originalPixels, numberOfPixels, targetBMP);
-    cleanup(header, height, width, numberOfPixels, originalPixels, editedPixels, inputBMP, targetBMP);
+    fread(originalPixels, 1, (*numberOfPixels * 3), inputBMP); // Reads the pixels from the original image into *originalPixels.
+    // printPixels(originalPixels, numberOfPixels); // Prints the pixels from the original image.
+
+    // Insert the filter here.
+
+    writeNewPixels(originalPixels, numberOfPixels, targetBMP);                                         // Writes the pixels to the output file.
+    cleanup(header, height, width, numberOfPixels, originalPixels, editedPixels, inputBMP, targetBMP); // Memory cleanup.
 
     return 0;
 }
@@ -143,6 +149,7 @@ void printFileInfo(void)
 
 void cleanup(unsigned char *header, signed int *height, signed int *width, signed int *numberOfPixels, unsigned char *originalPixels, unsigned char *editedPixels, FILE *inputBMP, FILE *targetBMP)
 {
+    // Goodbye!
     free(header);
     free(height);
     free(width);
