@@ -1,3 +1,9 @@
+/**
+* @file imgfilter_c.c
+* @brief A program that manipulates a image using convection.
+* @authors Sem Kirkels, Nathan Bruggeman, Axel Vanherle.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
