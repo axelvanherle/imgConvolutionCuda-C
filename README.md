@@ -24,3 +24,7 @@ Example:
 ![image](https://user-images.githubusercontent.com/94362354/197715748-c407534a-eb89-494a-a06e-f54e60475493.png)
 
 We wrote the application in C with and without CUDA, so we can compare the speed gained.
+
+# Sources
+
+We used the image loader: stb_image.h and the image writer: stb_image_write.h from https://github.com/nothings/stb.
