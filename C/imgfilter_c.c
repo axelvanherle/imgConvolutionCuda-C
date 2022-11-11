@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define INPUT_IMAGE "Images/img4.png"
+#define INPUT_IMAGE "Images/img5.png"
 
 typedef struct Pixel
 {
@@ -28,7 +28,7 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
-int main()
+int main(int argc, char** argv)
 {
     // Open image
     int width, height, componentCount;
