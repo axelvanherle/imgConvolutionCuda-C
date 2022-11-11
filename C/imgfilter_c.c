@@ -7,10 +7,10 @@
 
 #define INPUT_IMAGE "img2.png"
 
-struct Pixel
+typedef struct Pixel
 {
     unsigned char r, g, b, a;
-};
+}Pixel;
 
 void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 {
