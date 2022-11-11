@@ -3,14 +3,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
-#include "stb_image_write.h"  
+#include "stb_image_write.h"
 
 #define INPUT_IMAGE "img2.png"
 
 typedef struct Pixel
 {
     unsigned char r, g, b, a;
-}Pixel;
+} Pixel;
 
 void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 {
