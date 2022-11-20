@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define INPUT_IMAGE "Images/img5.png"
+#define INPUT_IMAGE "Images/img10.png"
 
 typedef struct Pixel
 {
