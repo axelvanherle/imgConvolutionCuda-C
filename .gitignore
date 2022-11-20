@@ -5,3 +5,6 @@
 *.cubin
 *.fatbin
 *.exe
+
+# To stop the output image from getting pushed.
+gray.png
