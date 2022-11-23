@@ -50,7 +50,7 @@ void *runThreads(void *vargp)
     if (!imageData)
     {
         printf("Failed to open Image\r\n");
-        exit - 1;
+        exit(-1);
     }
     printf(" DONE %s\r\n", INPUT_IMAGE);
 
@@ -59,7 +59,7 @@ void *runThreads(void *vargp)
     {
         // NOTE: Leaked memory of "imageData"
         printf("Width and/or Height is not dividable by 32! ( %s )\r\n", INPUT_IMAGE);
-        exit - 1;
+        exit(-1);
     }
 
     // Process image on cpu
