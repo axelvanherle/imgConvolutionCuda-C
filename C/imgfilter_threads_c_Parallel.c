@@ -45,27 +45,27 @@ void *runThreads(void *vargp)
 
     // Open image
     int width, height, componentCount;
-    printf("Loading %s file...\r\n",INPUT_IMAGE);
+    printf("Loading %s file...\r\n", INPUT_IMAGE);
     unsigned char *imageData = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4);
     if (!imageData)
     {
         printf("Failed to open Image\r\n");
-        exit -1;
+        exit - 1;
     }
-    printf(" DONE %s\r\n",INPUT_IMAGE);
+    printf(" DONE %s\r\n", INPUT_IMAGE);
 
     // Validate image sizes
     if (width % 32 || height % 32)
     {
         // NOTE: Leaked memory of "imageData"
-        printf("Width and/or Height is not dividable by 32! ( %s )\r\n",INPUT_IMAGE);
-        exit -1;
+        printf("Width and/or Height is not dividable by 32! ( %s )\r\n", INPUT_IMAGE);
+        exit - 1;
     }
 
     // Process image on cpu
-    printf("Processing %s...:\r\n",INPUT_IMAGE);
+    printf("Processing %s...:\r\n", INPUT_IMAGE);
     ConvertImageToGrayCpu(imageData, width, height);
-    printf(" DONE %s\r\n",INPUT_IMAGE);
+    printf(" DONE %s\r\n", INPUT_IMAGE);
 
     // Build output filename
     char OUTPUT_IMAGE[32] = "Output_Images/gray";
@@ -75,7 +75,7 @@ void *runThreads(void *vargp)
     strcat(OUTPUT_IMAGE, ".png");
     const char *fileNameOut = OUTPUT_IMAGE;
     // Write image back to disk
-    printf("Writing %s to disk...\r\n",INPUT_IMAGE);
+    printf("Writing %s to disk...\r\n", INPUT_IMAGE);
     stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
     printf("DONE\r\n");
 
@@ -93,4 +93,5 @@ int main()
     }
 
     pthread_exit(NULL);
+    return 0;
 }
