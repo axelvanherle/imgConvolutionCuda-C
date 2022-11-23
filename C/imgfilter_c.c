@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define INPUT_IMAGE "Images/img7.png"
+#define INPUT_IMAGE "Images/img5.png"
 
 typedef struct Pixel
 {
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     const char *fileNameOut = "gray.png";
 
     // Write image back to disk
-    printf("Writing to disk...\r\n");
+    printf("Writing png to disk...\r\n");
     stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
     printf("DONE\r\n");
 
