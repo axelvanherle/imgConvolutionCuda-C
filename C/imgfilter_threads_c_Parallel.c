@@ -6,26 +6,11 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define INPUT_IMAGE "Images/img9.png"
+// The amount of pictures you have.
+// Relies on the fact you name your images correct (ie img11.png).
+#define NUM_THREADS 9
 
-int g = 0;
-
-// The function to be executed by all threads
-void *myThreadFun(void *vargp)
-{
-    // Store the value argument passed to this thread
-    int *myid = (int *)vargp;
-
-    // Let us create a static variable to observe its changes
-    static int s = 0;
-
-    // Change static and global variables
-    ++s;
-    ++g;
-
-    // Print the argument, static and global variables
-    printf("Thread ID: %d, Static: %d, Global: %d\n", *myid, ++s, ++g);
-}
+int threadNumber = 0;
 
 typedef struct Pixel
 {
@@ -48,15 +33,63 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
+void *runThreads(void *vargp)
+{
+    int threadId = threadNumber++;
+
+    char INPUT_IMAGE[32] = "Images/img";
+    char result[3];
+    sprintf(result, "%d", threadId);
+    strcat(INPUT_IMAGE, result);
+    strcat(INPUT_IMAGE, ".png");
+
+    // Open image
+    int width, height, componentCount;
+    printf("Loading %s file...\r\n",INPUT_IMAGE);
+    unsigned char *imageData = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4);
+    if (!imageData)
+    {
+        printf("Failed to open Image\r\n");
+        exit -1;
+    }
+    printf(" DONE %s\r\n",INPUT_IMAGE);
+
+    // Validate image sizes
+    if (width % 32 || height % 32)
+    {
+        // NOTE: Leaked memory of "imageData"
+        printf("Width and/or Height is not dividable by 32! ( %s )\r\n",INPUT_IMAGE);
+        exit -1;
+    }
+
+    // Process image on cpu
+    printf("Processing %s...:\r\n",INPUT_IMAGE);
+    ConvertImageToGrayCpu(imageData, width, height);
+    printf(" DONE %s\r\n",INPUT_IMAGE);
+
+    // Build output filename
+    char OUTPUT_IMAGE[32] = "Output_Images/gray";
+    char result1[3];
+    sprintf(result1, "%d", threadId);
+    strcat(OUTPUT_IMAGE, result1);
+    strcat(OUTPUT_IMAGE, ".png");
+    const char *fileNameOut = OUTPUT_IMAGE;
+    // Write image back to disk
+    printf("Writing %s to disk...\r\n",INPUT_IMAGE);
+    stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
+    printf("DONE\r\n");
+
+    stbi_image_free(imageData);
+    return NULL;
+}
+
 int main()
 {
-    int i;
     pthread_t tid;
 
-    // Let us create three threads
-    for (i = 0; i < 3; i++)
+    for (int i = 0; i <= NUM_THREADS; i++)
     {
-        pthread_create(&tid, NULL, myThreadFun, (void *)&tid);
+        pthread_create(&tid, NULL, runThreads, NULL);
     }
 
     pthread_exit(NULL);
