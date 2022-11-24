@@ -10,6 +10,7 @@
 // Relies on the fact you name your images correct (ie img11.png).
 #define NUM_THREADS 9
 
+// Used to store which thread we are in.
 int threadNumber = 0;
 
 typedef struct Pixel
@@ -17,6 +18,7 @@ typedef struct Pixel
     unsigned char r, g, b, a;
 } Pixel;
 
+// Function to convert the image from colour to grayscale.
 void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 {
     for (int y = 0; y < height; y++)
@@ -33,10 +35,13 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
+// This function runs all the threads
 void *runThreads(void *vargp)
 {
+    // Get which thread we are in, and do + for the next thread.
     int threadId = threadNumber++;
 
+    // Make a usefull string that we can use to open the correct image.
     char INPUT_IMAGE[32] = "Images/img";
     char result[3];
     sprintf(result, "%d", threadId);
@@ -87,6 +92,7 @@ int main()
 {
     pthread_t tid;
 
+    // Make NUM_THREADS amount of threads.
     for (int i = 0; i <= NUM_THREADS; i++)
     {
         pthread_create(&tid, NULL, runThreads, NULL);
