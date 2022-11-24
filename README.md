@@ -25,6 +25,10 @@ Example:
 
 We wrote the application in C with and without CUDA, so we can compare the speed gained.
 
+# Graphs
+
+
+
 # Sources
 
 We used the image loader: stb_image.h and the image writer: stb_image_write.h from https://github.com/nothings/stb.
