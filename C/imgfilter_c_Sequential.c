@@ -6,7 +6,6 @@
 #include "stb_image_write.h"
 #include <time.h>
 
-
 // Hard coded the input files
 #define INPUT_IMAGE_0  "Images/img0.png"
 #define INPUT_IMAGE_1  "Images/img1.png"
@@ -111,15 +110,16 @@ void processImageGray(char *inputFile, char *outputFile, int imgCounter)
 {
     // Open image
     int width, height, componentCount;
-
+    
+    printf("\r\n\r\n");
     printf("Loading png file... [%d / 10]\r\n", imgCounter);
     unsigned char *imageData = stbi_load(inputFile, &width, &height, &componentCount, 4);
     if (!imageData)
     {
-        printf("Failed to open Image\r\n");
+        printf("Failed to open Image [%d / 10]\r\n", imgCounter);
         exit(-1);
     }
-    printf(" DONE \r\n");
+    printf("DONE \r\n");
 
     // Validate image sizes
     if (width % 32 || height % 32)
@@ -132,12 +132,13 @@ void processImageGray(char *inputFile, char *outputFile, int imgCounter)
     // Process image on cpu
     printf("Processing image...: [%d / 10]\r\n", imgCounter);
     ConvertImageToGrayCpu(imageData, width, height);
-    printf(" DONE \r\n");
+    printf("DONE \r\n");
 
     // Write image back to disk
     printf("Writing to disk... [%d / 10]\r\n", imgCounter);
     stbi_write_png(outputFile, width, height, 4, imageData, 4 * width);
-    printf("DONE [%d / 10]\r\n", imgCounter);
+    printf("Grayscaling img [%d / 10] DONE\r\n", imgCounter);
+    printf("\r\n");
 
     stbi_image_free(imageData);
 }
@@ -167,10 +168,10 @@ void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
     unsigned char *imageData = stbi_load(inputFile, &width, &height, &componentCount, 4);
     if (!imageData)
     {
-        printf("Failed to open Image\r\n");
+        printf("Failed to open Image [%d / 10]\r\n", imgCounter);
         exit(-1);
     }
-    printf(" DONE \r\n");
+    printf("DONE \r\n");
 
     // Validate image sizes
     if (width % 32 || height % 32)
@@ -183,12 +184,13 @@ void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
     // Process image on cpu
     printf("Processing image...: [%d / 10]\r\n", imgCounter);
     convolveImage(imageData, width, height);
-    printf(" DONE \r\n");
+    printf("DONE \r\n");
 
     // Write image back to disk
     printf("Writing to disk... [%d / 10]\r\n", imgCounter);
     stbi_write_png(outputFile, width, height, 4, imageData, 4 * width);
-    printf("DONE [%d / 10]\r\n", imgCounter);
+    printf("Convolution img [%d / 10] DONE\r\n", imgCounter);
+    printf("\r\n\r\n");
 
     stbi_image_free(imageData);
 }
