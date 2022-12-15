@@ -19,33 +19,57 @@
 #define INPUT_IMAGE_9  "Images/img9.png"
 
 // Hard coded the output files grayscale
-#define OUTPUT_IMAGE_0  "Output_Images/img0.png"
-#define OUTPUT_IMAGE_1  "Output_Images/img1.png"
-#define OUTPUT_IMAGE_2  "Output_Images/img2.png"
-#define OUTPUT_IMAGE_3  "Output_Images/img3.png"
-#define OUTPUT_IMAGE_4  "Output_Images/img4.png"
-#define OUTPUT_IMAGE_5  "Output_Images/img5.png"
-#define OUTPUT_IMAGE_6  "Output_Images/img6.png"
-#define OUTPUT_IMAGE_7  "Output_Images/img7.png"
-#define OUTPUT_IMAGE_8  "Output_Images/img8.png"
-#define OUTPUT_IMAGE_9  "Output_Images/img9.png"
+#define OUTPUT_IMAGE_0  "Output_Images/Grayscale/img0.png"
+#define OUTPUT_IMAGE_1  "Output_Images/Grayscale/img1.png"
+#define OUTPUT_IMAGE_2  "Output_Images/Grayscale/img2.png"
+#define OUTPUT_IMAGE_3  "Output_Images/Grayscale/img3.png"
+#define OUTPUT_IMAGE_4  "Output_Images/Grayscale/img4.png"
+#define OUTPUT_IMAGE_5  "Output_Images/Grayscale/img5.png"
+#define OUTPUT_IMAGE_6  "Output_Images/Grayscale/img6.png"
+#define OUTPUT_IMAGE_7  "Output_Images/Grayscale/img7.png"
+#define OUTPUT_IMAGE_8  "Output_Images/Grayscale/img8.png"
+#define OUTPUT_IMAGE_9  "Output_Images/Grayscale/img9.png"
 
-// Hard coded the output files
-#define OUTPUT_IMAGE_0_CONVOLVE  "Output_Images/img0_convolution.png"
-#define OUTPUT_IMAGE_1_CONVOLVE  "Output_Images/img1_convolution.png"
-#define OUTPUT_IMAGE_2_CONVOLVE  "Output_Images/img2_convolution.png"
-#define OUTPUT_IMAGE_3_CONVOLVE  "Output_Images/img3_convolution.png"
-#define OUTPUT_IMAGE_4_CONVOLVE  "Output_Images/img4_convolution.png"
-#define OUTPUT_IMAGE_5_CONVOLVE  "Output_Images/img5_convolution.png"
-#define OUTPUT_IMAGE_6_CONVOLVE  "Output_Images/img6_convolution.png"
-#define OUTPUT_IMAGE_7_CONVOLVE  "Output_Images/img7_convolution.png"
-#define OUTPUT_IMAGE_8_CONVOLVE  "Output_Images/img8_convolution.png"
-#define OUTPUT_IMAGE_9_CONVOLVE  "Output_Images/img9_convolution.png"
+// Hard coded the output files for convolution
+#define OUTPUT_IMAGE_0_CONVOLVE  "Output_Images/Convolution/img0_convolution.png"
+#define OUTPUT_IMAGE_1_CONVOLVE  "Output_Images/Convolution/img1_convolution.png"
+#define OUTPUT_IMAGE_2_CONVOLVE  "Output_Images/Convolution/img2_convolution.png"
+#define OUTPUT_IMAGE_3_CONVOLVE  "Output_Images/Convolution/img3_convolution.png"
+#define OUTPUT_IMAGE_4_CONVOLVE  "Output_Images/Convolution/img4_convolution.png"
+#define OUTPUT_IMAGE_5_CONVOLVE  "Output_Images/Convolution/img5_convolution.png"
+#define OUTPUT_IMAGE_6_CONVOLVE  "Output_Images/Convolution/img6_convolution.png"
+#define OUTPUT_IMAGE_7_CONVOLVE  "Output_Images/Convolution/img7_convolution.png"
+#define OUTPUT_IMAGE_8_CONVOLVE  "Output_Images/Convolution/img8_convolution.png"
+#define OUTPUT_IMAGE_9_CONVOLVE  "Output_Images/Convolution/img9_convolution.png"
+
+// Hard coded the output files for max pooling
+#define OUTPUT_IMAGE_0_POOLING_MAX  "Output_Images/Pooling/img0_pooling_max.png"
+#define OUTPUT_IMAGE_1_POOLING_MAX  "Output_Images/Pooling/img1_pooling_max.png"
+#define OUTPUT_IMAGE_2_POOLING_MAX  "Output_Images/Pooling/img2_pooling_max.png"
+#define OUTPUT_IMAGE_3_POOLING_MAX  "Output_Images/Pooling/img3_pooling_max.png"
+#define OUTPUT_IMAGE_4_POOLING_MAX  "Output_Images/Pooling/img4_pooling_max.png"
+#define OUTPUT_IMAGE_5_POOLING_MAX  "Output_Images/Pooling/img5_pooling_max.png"
+#define OUTPUT_IMAGE_6_POOLING_MAX  "Output_Images/Pooling/img6_pooling_max.png"
+#define OUTPUT_IMAGE_7_POOLING_MAX  "Output_Images/Pooling/img7_pooling_max.png"
+#define OUTPUT_IMAGE_8_POOLING_MAX  "Output_Images/Pooling/img8_pooling_max.png"
+#define OUTPUT_IMAGE_9_POOLING_MAX  "Output_Images/Pooling/img9_pooling_max.png"
+
+// Hard coded the output files for min pooling
+#define OUTPUT_IMAGE_0_POOLING_MIN  "Output_Images/Pooling/img0_pooling_min.png"
+#define OUTPUT_IMAGE_1_POOLING_MIN  "Output_Images/Pooling/img1_pooling_min.png"
+#define OUTPUT_IMAGE_2_POOLING_MIN  "Output_Images/Pooling/img2_pooling_min.png"
+#define OUTPUT_IMAGE_3_POOLING_MIN  "Output_Images/Pooling/img3_pooling_min.png"
+#define OUTPUT_IMAGE_4_POOLING_MIN  "Output_Images/Pooling/img4_pooling_min.png"
+#define OUTPUT_IMAGE_5_POOLING_MIN  "Output_Images/Pooling/img5_pooling_min.png"
+#define OUTPUT_IMAGE_6_POOLING_MIN  "Output_Images/Pooling/img6_pooling_min.png"
+#define OUTPUT_IMAGE_7_POOLING_MIN  "Output_Images/Pooling/img7_pooling_min.png"
+#define OUTPUT_IMAGE_8_POOLING_MIN  "Output_Images/Pooling/img8_pooling_min.png"
+#define OUTPUT_IMAGE_9_POOLING_MIN  "Output_Images/Pooling/img9_pooling_min.png"
 
 void processImageGray(char *inputFile, char *outputFile, int imgCounter);       // Opens the image, starts the convertion function and writes the output image
 void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height);    // Converts the image to grayscale
 
-void processImageConvolve(char *inputFile, char *outputFile, int imgCounter);     // Opens the image, starts the convolution and writes the output file
+void processImageConvolve(char *inputFile, char *outputFile, int imgCounter);   // Opens the image, starts the convolution and writes the output file
 void convolveImage(unsigned char *imageRGBA, int width, int height);            // Convolutes image
 
 typedef struct Pixel
@@ -65,39 +89,39 @@ int main()
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_1, OUTPUT_IMAGE_1, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_1, OUTPUT_IMAGE_1_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_1, OUTPUT_IMAGE_1_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_2, OUTPUT_IMAGE_2, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_2, OUTPUT_IMAGE_2_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_2, OUTPUT_IMAGE_2_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_3, OUTPUT_IMAGE_3, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_3, OUTPUT_IMAGE_3_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_3, OUTPUT_IMAGE_3_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_4, OUTPUT_IMAGE_4, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_4, OUTPUT_IMAGE_4_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_4, OUTPUT_IMAGE_4_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_5, OUTPUT_IMAGE_5, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_5, OUTPUT_IMAGE_5_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_5, OUTPUT_IMAGE_5_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_6, OUTPUT_IMAGE_6, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_6, OUTPUT_IMAGE_6_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_6, OUTPUT_IMAGE_6_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_7, OUTPUT_IMAGE_7, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_7, OUTPUT_IMAGE_7_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_7, OUTPUT_IMAGE_7_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_8, OUTPUT_IMAGE_8, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_8, OUTPUT_IMAGE_8_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_8, OUTPUT_IMAGE_8_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_9, OUTPUT_IMAGE_9, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_9, OUTPUT_IMAGE_9_CONVOLVE, imgCounter);
+    //processImageConvolve(OUTPUT_IMAGE_9, OUTPUT_IMAGE_9_CONVOLVE, imgCounter);
 
     timer_end = clock(); // end the timer
     double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
@@ -106,6 +130,12 @@ int main()
     return 0;
 }
 
+/*
+    This function opens the image and reads the hight and width.
+    Then this function checks if the image is supported.
+    After that the "ConvertToGray" function is called.
+    Finally the data is written to a new file.
+*/
 void processImageGray(char *inputFile, char *outputFile, int imgCounter)
 {
     // Open image
@@ -143,6 +173,9 @@ void processImageGray(char *inputFile, char *outputFile, int imgCounter)
     stbi_image_free(imageData);
 }
 
+/*
+    This function converts the image to grayscale.
+*/
 void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 {
     for (int y = 0; y < height; y++)
@@ -159,6 +192,12 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
+/*
+    This function opens the grayscale image and reads the hight and width.
+    Then this function checks if the image is supported.
+    After that the "ConvolveImage" function is called.
+    Finally the data is written to a new file.
+*/
 void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
 {
     // Open image
@@ -195,13 +234,16 @@ void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
     stbi_image_free(imageData);
 }
 
+/*
+    This function convolves the image.
+*/
 void convolveImage(unsigned char *imageRGBA, int width, int height)
 {
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-
+            
         }
     }
 }

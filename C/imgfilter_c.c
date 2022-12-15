@@ -28,22 +28,6 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
-void ConvoluteImageCpu(unsigned char *imageRGBA, int width, int height)
-{
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            Pixel *ptrPixel = (Pixel *)&imageRGBA[y * width * 4 + 4 * x];
-            unsigned char pixelValue = (unsigned char)(ptrPixel->r * 0.2126f + ptrPixel->g * 0.7152f + ptrPixel->b * 0.0722f);
-            ptrPixel->r = pixelValue;
-            ptrPixel->g = pixelValue;
-            ptrPixel->b = pixelValue;
-            ptrPixel->a = 255;
-        }
-    }
-}
-
 int main(int argc, char** argv)
 {
     // Open image
