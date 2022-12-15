@@ -87,42 +87,42 @@ int main()
     processImageGray(INPUT_IMAGE_0, OUTPUT_IMAGE_0, imgCounter);
     processImageConvolve(OUTPUT_IMAGE_0, OUTPUT_IMAGE_0_CONVOLVE, imgCounter);
     imgCounter++;
-
+    
     processImageGray(INPUT_IMAGE_1, OUTPUT_IMAGE_1, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_1, OUTPUT_IMAGE_1_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_1, OUTPUT_IMAGE_1_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_2, OUTPUT_IMAGE_2, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_2, OUTPUT_IMAGE_2_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_2, OUTPUT_IMAGE_2_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_3, OUTPUT_IMAGE_3, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_3, OUTPUT_IMAGE_3_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_3, OUTPUT_IMAGE_3_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_4, OUTPUT_IMAGE_4, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_4, OUTPUT_IMAGE_4_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_4, OUTPUT_IMAGE_4_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_5, OUTPUT_IMAGE_5, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_5, OUTPUT_IMAGE_5_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_5, OUTPUT_IMAGE_5_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_6, OUTPUT_IMAGE_6, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_6, OUTPUT_IMAGE_6_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_6, OUTPUT_IMAGE_6_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_7, OUTPUT_IMAGE_7, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_7, OUTPUT_IMAGE_7_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_7, OUTPUT_IMAGE_7_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_8, OUTPUT_IMAGE_8, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_8, OUTPUT_IMAGE_8_CONVOLVE, imgCounter);
+    processImageConvolve(OUTPUT_IMAGE_8, OUTPUT_IMAGE_8_CONVOLVE, imgCounter);
     imgCounter++;
 
     processImageGray(INPUT_IMAGE_9, OUTPUT_IMAGE_9, imgCounter);
-    //processImageConvolve(OUTPUT_IMAGE_9, OUTPUT_IMAGE_9_CONVOLVE, imgCounter);
-
+    processImageConvolve(OUTPUT_IMAGE_9, OUTPUT_IMAGE_9_CONVOLVE, imgCounter);
+    
     timer_end = clock(); // end the timer
     double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
     printf("\nProgram time: %.3fs\n", time_spent);
@@ -239,11 +239,39 @@ void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
 */
 void convolveImage(unsigned char *imageRGBA, int width, int height)
 {
-    for (int y = 0; y < height; y++)
+    for (int y = 0; y < height - 2; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width - 2; x++)
         {
-            
+            for(int i = 0; i <= 2; i++)
+            {
+                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
+                unsigned char pixelValue = 255;
+                ptrPixel->r = pixelValue;
+                ptrPixel->g = pixelValue;
+                ptrPixel->b = pixelValue;
+                ptrPixel->a = 255;
+            }
+
+            for(int i = 0; i <= 2; i++)
+            {
+                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
+                unsigned char pixelValue = 255;
+                ptrPixel->r = pixelValue;
+                ptrPixel->g = pixelValue;
+                ptrPixel->b = pixelValue;
+                ptrPixel->a = 255;
+            }
+
+            for(int i = 0; i <= 2; i++)
+            {
+                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
+                unsigned char pixelValue = 255;
+                ptrPixel->r = pixelValue;
+                ptrPixel->g = pixelValue;
+                ptrPixel->b = pixelValue;
+                ptrPixel->a = 255;
+            }
         }
     }
 }

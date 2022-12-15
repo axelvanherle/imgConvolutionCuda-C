@@ -5,6 +5,7 @@
 *.cubin
 *.fatbin
 *.exe
+*.out
 
 # To stop the output image from getting pushed.
 gray.png
@@ -29,4 +30,15 @@ img6.png
 img7.png
 img8.png
 img9.png
+
+img0_convolution.png
+img1_convolution.png
+img2_convolution.png
+img3_convolution.png
+img4_convolution.png
+img5_convolution.png
+img6_convolution.png
+img7_convolution.png
+img8_convolution.png
+img9_convolution.png
 
