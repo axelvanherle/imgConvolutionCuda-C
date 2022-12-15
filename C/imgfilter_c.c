@@ -78,5 +78,10 @@ int main(int argc, char** argv)
     stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
     printf("DONE\r\n");
 
+    // Process image on cpu
+    printf("Processing image...:\r\n");
+    ConvoluteImageCpu(imageData, width, height);
+    printf(" DONE \r\n");
+
     stbi_image_free(imageData);
 }
