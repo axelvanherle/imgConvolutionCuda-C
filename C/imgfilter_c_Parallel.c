@@ -35,6 +35,48 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
+/*
+    This function convolves the image.
+*/
+void convolveImage(unsigned char *imageRGBA, int width, int height)
+{
+    for (int y = 0; y < height - 2; y++)
+    {
+        for (int x = 0; x < width - 2; x++)
+        {
+            for(int i = 0; i <= 2; i++)
+            {
+                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
+                unsigned char pixelValue = 255;
+                ptrPixel->r = pixelValue;
+                ptrPixel->g = pixelValue;
+                ptrPixel->b = pixelValue;
+                ptrPixel->a = 255;
+            }
+
+            for(int i = 0; i <= 2; i++)
+            {
+                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
+                unsigned char pixelValue = 255;
+                ptrPixel->r = pixelValue;
+                ptrPixel->g = pixelValue;
+                ptrPixel->b = pixelValue;
+                ptrPixel->a = 255;
+            }
+
+            for(int i = 0; i <= 2; i++)
+            {
+                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
+                unsigned char pixelValue = 255;
+                ptrPixel->r = pixelValue;
+                ptrPixel->g = pixelValue;
+                ptrPixel->b = pixelValue;
+                ptrPixel->a = 255;
+            }
+        }
+    }
+}
+
 // This function runs all the threads
 void *runThreads(void *vargp)
 {
@@ -79,6 +121,12 @@ void *runThreads(void *vargp)
     strcat(OUTPUT_IMAGE, result1);
     strcat(OUTPUT_IMAGE, ".png");
     const char *fileNameOut = OUTPUT_IMAGE;
+
+    // Process image on cpu
+    printf("Processing image...:\r\n");
+    convolveImage(imageData, width, height);
+    printf(" DONE \r\n");
+
     // Write image back to disk
     printf("Writing %s to disk...\r\n", INPUT_IMAGE);
     stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
