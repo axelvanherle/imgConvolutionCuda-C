@@ -28,52 +28,21 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
-void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
-{
-    // Open image
-    int width, height, componentCount;
-
-    printf("Loading png file... [%d / 10]\r\n", imgCounter);
-    unsigned char *imageData = stbi_load(inputFile, &width, &height, &componentCount, 4);
-    if (!imageData)
-    {
-        printf("Failed to open Image [%d / 10]\r\n", imgCounter);
-        exit(-1);
-    }
-    printf("DONE \r\n");
-
-    // Validate image sizes
-    if (width % 32 || height % 32)
-    {
-        // NOTE: Leaked memory of "imageData"
-        printf("Width and/or Height is not dividable by 32! [%d / 10]\r\n", imgCounter);
-        exit(-1);
-    }
-
-    // Process image on cpu
-    printf("Processing image...: [%d / 10]\r\n", imgCounter);
-    convolveImage(imageData, width, height);
-    printf("DONE \r\n");
-
-    // Write image back to disk
-    printf("Writing to disk... [%d / 10]\r\n", imgCounter);
-    stbi_write_png(outputFile, width, height, 4, imageData, 4 * width);
-    printf("Convolution img [%d / 10] DONE\r\n", imgCounter);
-    printf("\r\n\r\n");
-
-    stbi_image_free(imageData);
-}
-
 /*
     This function convolves the image.
 */
 void convolveImage(unsigned char *imageRGBA, int width, int height)
 {
+    int kernel[3][3] = {
+        {1, 0, -1},
+        {1, 0, -1},
+        {1, 0, -1}};
+
     for (int y = 0; y < height - 2; y++)
     {
         for (int x = 0; x < width - 2; x++)
         {
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
                 unsigned char pixelValue = 255;
@@ -83,7 +52,7 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
                 ptrPixel->a = 255;
             }
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
                 unsigned char pixelValue = 255;
@@ -93,7 +62,7 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
                 ptrPixel->a = 255;
             }
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
                 unsigned char pixelValue = 255;
@@ -106,7 +75,7 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
     }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     // Open image
     int width, height, componentCount;
