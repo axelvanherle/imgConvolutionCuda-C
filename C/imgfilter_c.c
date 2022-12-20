@@ -38,6 +38,8 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
         {1, 0, -1},
         {1, 0, -1}};
 
+    int pixels[3][3] = {0};
+
     for (int y = 0; y < height - 2; y++)
     {
         for (int x = 0; x < width - 2; x++)
@@ -50,6 +52,8 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
                 ptrPixel->g = pixelValue;
                 ptrPixel->b = pixelValue;
                 ptrPixel->a = 255;
+
+                pixels[0][i] = ptrPixel->r * kernel[0][i];
             }
 
             for (int i = 0; i <= 2; i++)
@@ -60,6 +64,8 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
                 ptrPixel->g = pixelValue;
                 ptrPixel->b = pixelValue;
                 ptrPixel->a = 255;
+
+                pixels[1][i] = ptrPixel->r * kernel[0][i];
             }
 
             for (int i = 0; i <= 2; i++)
@@ -70,7 +76,11 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
                 ptrPixel->g = pixelValue;
                 ptrPixel->b = pixelValue;
                 ptrPixel->a = 255;
+
+                pixels[2][i] = ptrPixel->r * kernel[0][i];
             }
+
+            
         }
     }
 }
