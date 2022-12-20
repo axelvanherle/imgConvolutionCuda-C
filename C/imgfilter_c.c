@@ -56,27 +56,23 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
 
-                pixels[1][i] = ptrPixel->r * kernel[0][i];
+                pixels[1][i] = ptrPixel->r * kernel[1][i];
             }
 
             for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
 
-                pixels[2][i] = ptrPixel->r * kernel[0][i];
+                pixels[2][i] = ptrPixel->r * kernel[2][i];
             }
 
-            for (size_t i = 0; i <= 3; i++)
-            {
-                for (size_t j = 0; j <=3; j++)
-                {
-                    finalPixel+= pixels[i][j];
-                }
-                
-            }
+            finalPixel = (pixels[0][0] + pixels[0][1] + pixels[0][2] + pixels[1][0] + pixels[1][1] + pixels[1][2] + pixels[2][0] + pixels[2][1] + pixels[2][2]) / 9;
 
-            finalPixel = finalPixel / 9;
-            printf("%d\n",finalPixel);
+            Pixel *ptrPixel = (Pixel *)&imageTest[(y * width * 4 + 4 * x)];
+            ptrPixel->r = finalPixel;
+            ptrPixel->g = finalPixel;
+            ptrPixel->b = finalPixel;
+            ptrPixel->a = 255;
         }   
     }
 }
@@ -120,7 +116,7 @@ int main(int argc, char **argv)
 
     // Write image back to disk
     printf("Writing png to disk...\r\n");
-    stbi_write_png(fileNameOut, width, height, 4, imageDataTest, 4 * width);
+    stbi_write_png(fileNameOut, (width / 3), (height / 3), 4, imageDataTest, ((4 * width) / 3));
     printf("DONE\r\n");
 
     stbi_image_free(imageData);
