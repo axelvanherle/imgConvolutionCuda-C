@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     int width, height, componentCount;
     printf("Loading png file...\r\n");
     unsigned char *imageData = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4);
-    unsigned char *imageDataTest = (unsigned char *)malloc((sizeof(width*height)));
+    unsigned char *imageDataTest = (unsigned char *)malloc(width*height*4);
     if (!imageData)
     {
         printf("Failed to open Image\r\n");
@@ -112,11 +112,9 @@ int main(int argc, char **argv)
     // Build output filename
     const char *fileNameOut = "output.png";
 
-    imageDataTest = imageData;
-
     // Write image back to disk
     printf("Writing png to disk...\r\n");
-    stbi_write_png(fileNameOut, (width / 3), (height / 3), 4, imageDataTest, ((4 * width) / 3));
+    stbi_write_png(fileNameOut, width-2, height-2, 4, imageDataTest,4 * width);
     printf("DONE\r\n");
 
     stbi_image_free(imageData);
