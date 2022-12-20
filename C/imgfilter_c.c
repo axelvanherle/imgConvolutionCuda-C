@@ -79,8 +79,6 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
 
                 pixels[2][i] = ptrPixel->r * kernel[0][i];
             }
-
-            
         }
     }
 }
