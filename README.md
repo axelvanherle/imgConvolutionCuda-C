@@ -1,5 +1,7 @@
 # imgConvolutionCuda-C
 
+test
+
 An application written by Sem Kirkels, Nathan Bruggeman and Axel Vanherle in C and using CUDA that manipulates a image using convolution.
 
 ### What is it?
