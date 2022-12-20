@@ -114,8 +114,21 @@ int main(int argc, char **argv)
 
     // Write image back to disk
     printf("Writing png to disk...\r\n");
-    stbi_write_png(fileNameOut, width-2, height-2, 4, imageDataTest,4 * width);
+    stbi_write_png(fileNameOut, width - 2, height - 2, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
 
+    // Validate image sizes
+    if (width % 3 || height % 3)
+    {
+        // NOTE: Leaked memory of "imageData"
+        printf("Width and/or Height is not dividable by 3!\r\n");
+        stbi_image_free(imageData);
+        free(imageDataTest);
+        return -1;
+    }
+
     stbi_image_free(imageData);
+    free(imageDataTest);
+
+    return 0;
 }
