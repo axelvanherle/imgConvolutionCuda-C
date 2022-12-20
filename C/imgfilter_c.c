@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define INPUT_IMAGE "Images/img5.png"
+#define INPUT_IMAGE "Images/img0.png"
 
 typedef struct Pixel
 {
@@ -31,7 +31,7 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 /*
     This function convolves the image.
 */
-void convolveImage(unsigned char *imageRGBA, int width, int height)
+void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
     int kernel[3][3] = {
         {1, 0, -1},
@@ -39,6 +39,7 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
         {1, 0, -1}};
 
     int pixels[3][3] = {0};
+    int finalPixel = 0;
 
     for (int y = 0; y < height - 2; y++)
     {
@@ -47,11 +48,6 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
             for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
 
                 pixels[0][i] = ptrPixel->r * kernel[0][i];
             }
@@ -59,11 +55,6 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
             for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
 
                 pixels[1][i] = ptrPixel->r * kernel[0][i];
             }
@@ -71,15 +62,22 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
             for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
 
                 pixels[2][i] = ptrPixel->r * kernel[0][i];
             }
-        }
+
+            for (size_t i = 0; i <= 3; i++)
+            {
+                for (size_t j = 0; j <=3; j++)
+                {
+                    finalPixel+= pixels[i][j];
+                }
+                
+            }
+
+            finalPixel = finalPixel / 9;
+            printf("%d\n",finalPixel);
+        }   
     }
 }
 
@@ -89,6 +87,7 @@ int main(int argc, char **argv)
     int width, height, componentCount;
     printf("Loading png file...\r\n");
     unsigned char *imageData = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4);
+    unsigned char *imageDataTest = (unsigned char *)malloc((sizeof(width*height)));
     if (!imageData)
     {
         printf("Failed to open Image\r\n");
@@ -111,15 +110,17 @@ int main(int argc, char **argv)
 
     // Process image on cpu
     printf("Processing image...:\r\n");
-    convolveImage(imageData, width, height);
+    convolveImage(imageData, imageDataTest, width, height);
     printf(" DONE \r\n");
 
     // Build output filename
     const char *fileNameOut = "output.png";
 
+    imageDataTest = imageData;
+
     // Write image back to disk
     printf("Writing png to disk...\r\n");
-    stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
+    stbi_write_png(fileNameOut, width, height, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
 
     stbi_image_free(imageData);
