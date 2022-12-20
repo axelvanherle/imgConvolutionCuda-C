@@ -239,6 +239,14 @@ void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
 */
 void convolveImage(unsigned char *imageRGBA, int width, int height)
 {
+    int tempPixel[3][3] = {0};
+    int convolveMatrix[3][3] = 
+    {
+        1, 0, -1,
+        1, 0, -1,
+        1, 0, -1
+    };
+
     for (int y = 0; y < height - 2; y++)
     {
         for (int x = 0; x < width - 2; x++)
@@ -246,31 +254,19 @@ void convolveImage(unsigned char *imageRGBA, int width, int height)
             for(int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
+                tempPixel[0][i] = ptrPixel->r * convolveMatrix[0][i];
             }
 
             for(int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
+                tempPixel[1][i] = ptrPixel->r * convolveMatrix[1][i];
             }
 
             for(int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
+                tempPixel[2][i] = ptrPixel->r * convolveMatrix[2][i];
             }
         }
     }
