@@ -33,10 +33,12 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 */
 void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
-    int kernel[3][3] = {
+    int kernel[3][3] =
+    {
         {1, 0, -1},
         {1, 0, -1},
-        {1, 0, -1}};
+        {1, 0, -1}
+    };
 
     int pixels[3][3] = {0};
     int finalPixel = 0;
@@ -77,6 +79,16 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
     }
 }
 
+void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
+{
+
+}
+
+void maxPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
+{
+
+}
+
 int main(int argc, char **argv)
 {
     // Open image
@@ -100,12 +112,12 @@ int main(int argc, char **argv)
     }
 
     // Process image on cpu
-    printf("Processing image...:\r\n");
+    printf("Processing image grayscale...:\r\n");
     ConvertImageToGrayCpu(imageData, width, height);
     printf(" DONE \r\n");
 
     // Process image on cpu
-    printf("Processing image...:\r\n");
+    printf("Processing image convolution...:\r\n");
     convolveImage(imageData, imageDataTest, width, height);
     printf(" DONE \r\n");
 
@@ -113,7 +125,7 @@ int main(int argc, char **argv)
     const char *fileNameOut = "output.png";
 
     // Write image back to disk
-    printf("Writing png to disk...\r\n");
+    printf("Writing convolved png to disk...\r\n");
     stbi_write_png(fileNameOut, width - 2, height - 2, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
 
@@ -126,6 +138,24 @@ int main(int argc, char **argv)
         free(imageDataTest);
         return -1;
     }
+
+    printf("Processing image minimum pooling");
+    minPooling(imageData, imageDataTest, width, height)
+    printf("DONE");
+
+    // Write image back to disk
+    printf("Writing min pooling png to disk...\r\n");
+    stbi_write_png(fileNameOut, width / 3, height / 3, 4, imageDataTest, 4 * width);
+    printf("DONE\r\n");
+
+    printf("Processing image maximum pooling");
+    maxPooling(imageData, imageDataTest, width, height)
+    printf("DONE");
+
+    // Write image back to disk
+    printf("Writing max pooling png to disk...\r\n");
+    stbi_write_png(fileNameOut, width / 3, height / 3, 4, imageDataTest, 4 * width);
+    printf("DONE\r\n");
 
     stbi_image_free(imageData);
     free(imageDataTest);
