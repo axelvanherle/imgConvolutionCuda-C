@@ -82,49 +82,81 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
 
 void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
-    int pixels[3][3] = {0};
-    int finalPixel = 300;
+    int pixelsR[3][3] = {0};
+    int pixelsG[3][3] = {0};
+    int pixelsB[3][3] = {0};
+    int finalPixelR = 300;
+    int finalPixelG = 300;
+    int finalPixelB = 300;
 
-    for(int y = 0; y < height; y += 3 * 4)
+    for(int y = 0; y < height; y += 3)
     {
-        for(int x = 0; x < width; x += 3 * 4)
+        for(int x = 0; x < width; x += 3)
         {
             for(int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
 
-                pixels[0][i] = ptrPixel->r;
+                pixelsR[0][i] = ptrPixel->r;
+                pixelsG[0][i] = ptrPixel->g;
+                pixelsB[0][i] = ptrPixel->b;
             }
 
             for(int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4]; 
 
-                pixels[1][i] = ptrPixel->r;
+                pixelsR[1][i] = ptrPixel->r;
+                pixelsG[1][i] = ptrPixel->g;
+                pixelsB[1][i] = ptrPixel->b;
             }
 
             for(int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
 
-                pixels[2][i] = ptrPixel->r;
+                pixelsR[2][i] = ptrPixel->r;
+                pixelsG[2][i] = ptrPixel->g;
+                pixelsB[2][i] = ptrPixel->b;
             }
 
             for(int i = 0; i <= 2; i++)
             {
                 for(int j = 0; j <= 2; j++)
                 {
-                    if(pixels[i][j] < finalPixel)
+                    if(pixelsR[i][j] < finalPixelR)
                     {
-                        finalPixel = pixels[i][j];
+                        finalPixelR = pixelsR[i][j];
+                    }
+                }
+            }
+
+            for(int i = 0; i <= 2; i++)
+            {
+                for(int j = 0; j <= 2; j++)
+                {
+                    if(pixelsG[i][j] < finalPixelG)
+                    {
+                        finalPixelG = pixelsG[i][j];
+                    }
+                }
+            }
+
+            for(int i = 0; i <= 2; i++)
+            {
+                for(int j = 0; j <= 2; j++)
+                {
+                    if(pixelsB[i][j] < finalPixelB)
+                    {
+                        finalPixelB = pixelsB[i][j];
                     }
                 }
             }
 
             Pixel *ptrPixel = (Pixel *)&imageTest[(y * width * 4 + 4 * x)];
-            ptrPixel->r = finalPixel;
-            ptrPixel->g = finalPixel;
-            ptrPixel->b = finalPixel;
+            ptrPixel->r = finalPixelR;
+            ptrPixel->g = finalPixelG;
+            ptrPixel->b = finalPixelB;
             ptrPixel->a = 255;
         }
     }
@@ -204,7 +236,7 @@ int main(int argc, char **argv)
     printf("Writing min pooling png to disk...\r\n");
     stbi_write_png(fileNameOutMinPooling, width / 3, height / 3, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
-
+    /*
     printf("Processing image maximum pooling\r\n");
     maxPooling(originalImage, imageDataTest, width, height);
     printf("DONE\r\n");
@@ -213,7 +245,7 @@ int main(int argc, char **argv)
     printf("Writing max pooling png to disk...\r\n");
     stbi_write_png(fileNameOutMaxPooling, width / 3, height / 3, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
-
+    */
     stbi_image_free(imageData);
     free(imageDataTest);
     free(originalImage);
