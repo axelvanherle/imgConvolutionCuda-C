@@ -80,14 +80,14 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
     }
 }
 
-void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
+void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
 {
     unsigned char pixelsR[2][2] = {0};
     unsigned char pixelsG[2][2] = {0};
     unsigned char pixelsB[2][2] = {0};
-    unsigned char finalPixelR = 300;
-    unsigned char finalPixelG = 300;
-    unsigned char finalPixelB = 300;
+    unsigned char finalPixelR = 1000;
+    unsigned char finalPixelG = 1000;
+    unsigned char finalPixelB = 1000;
 
     for(int y = 0; y < height; y += 2)
     {
@@ -95,7 +95,7 @@ void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, i
         {
             for(int i = 0; i <= 1; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
+                Pixel *ptrPixel = (Pixel *)&originalImage[(y * width * 4 + 4 * x) + i * 4];
 
                 pixelsR[0][i] = ptrPixel->r;
                 pixelsG[0][i] = ptrPixel->g;
@@ -104,7 +104,7 @@ void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, i
 
             for(int i = 0; i <= 1; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4]; 
+                Pixel *ptrPixel = (Pixel *)&originalImage[(y * width * 4 + 4 * x) + width * 4 + i * 4]; 
 
                 pixelsR[1][i] = ptrPixel->r;
                 pixelsG[1][i] = ptrPixel->g;
@@ -144,11 +144,11 @@ void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, i
                 }
             }
 
-            Pixel *ptrPixel = (Pixel *)&imageTest[(y * width * 4 + 4 * x)];
+            Pixel *ptrPixel = (Pixel *)&minPoolingImage[(y * width * 4 + 4 * x)];
             ptrPixel->r = finalPixelR;
             ptrPixel->g = finalPixelG;
             ptrPixel->b = finalPixelB;
-            ptrPixel->a = 255;
+            ptrPixel->a = 0;
         }
     }
 }
@@ -186,15 +186,17 @@ int main(int argc, char **argv)
     // Open image
     int width, height, componentCount;
     printf("Loading png file...\r\n");
+    unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
     unsigned char *imageData = (unsigned char *)malloc(width * height * 4);                     // Saves grayscale image
     unsigned char *imageDataTest = (unsigned char *)malloc(width * height * 4);                 // Saves output image
-    unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
+    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4);           // Saves Min pooling image
     if (!originalImage)
     {
         printf("Failed to open Image\r\n");
-        stbi_image_free(imageData);
+        stbi_image_free(originalImage);
+        free(imageData);
         free(imageDataTest);
-        free(originalImage);
+        free(imageDataMinPooling);
         return -1;
     }
 
@@ -205,9 +207,10 @@ int main(int argc, char **argv)
     {
         // NOTE: Leaked memory of "imageData"
         printf("Width and/or Height is not dividable by 32!\r\n");
-        stbi_image_free(imageData);
+        stbi_image_free(originalImage);
+        free(imageData);
         free(imageDataTest);
-        free(originalImage);
+        free(imageDataMinPooling);
         return -1;
     }
 
@@ -236,19 +239,20 @@ int main(int argc, char **argv)
     {
         // NOTE: Leaked memory of "imageData"
         printf("Width and/or Height is not dividable by 3!\r\n");
-        stbi_image_free(imageData);
+        stbi_image_free(originalImage);
+        free(imageData);
         free(imageDataTest);
-        free(originalImage);
+        free(imageDataMinPooling);
         return -1;
     }
 
     printf("Processing image minimum pooling\r\n");
-    minPooling(originalImage, imageDataTest, width, height);
+    minPooling(originalImage, imageDataMinPooling, width, height);
     printf("DONE\r\n");
 
     // Write image back to disk
     printf("Writing min pooling png to disk...\r\n");
-    stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataTest, 4 * width);
+    stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * width);
     printf("DONE\r\n");
     /*
     printf("Processing image maximum pooling\r\n");
@@ -260,9 +264,10 @@ int main(int argc, char **argv)
     stbi_write_png(fileNameOutMaxPooling, width / 3, height / 3, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
     */
-    stbi_image_free(imageData);
+    stbi_image_free(originalImage);
+    free(imageData);
     free(imageDataTest);
-    free(originalImage);
+    free(imageDataMinPooling);
 
     return 0;
 }
