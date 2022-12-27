@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define INPUT_IMAGE "Images/img9.png"
+#define INPUT_IMAGE "Images/img0.png"
 
 typedef struct Pixel
 {
@@ -90,7 +90,7 @@ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, in
     unsigned char finalPixelR = ptrPixel->r;
     unsigned char finalPixelG = ptrPixel->g;
     unsigned char finalPixelB = ptrPixel->b;
-    unsigned char finalPixelA = ptrPixel->a;
+    unsigned char finalPixelA = 255;
 
     int counter = 0;
 
@@ -115,8 +115,6 @@ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, in
                 pixelsG[1][i] = ptrPixel->g;
                 pixelsB[1][i] = ptrPixel->b;
             }
-
-            finalPixelA = ptrPixel->a;
 
             for(int i = 0; i <= 1; i++)
             {
@@ -244,7 +242,7 @@ int main(int argc, char **argv)
     printf("DONE\r\n");
 
     // Validate image sizes
-    if (width % 3 || height % 3)
+    if (width % 2 || height % 2)
     {
         // NOTE: Leaked memory of "imageData"
         printf("Width and/or Height is not dividable by 3!\r\n");
