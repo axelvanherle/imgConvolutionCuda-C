@@ -86,7 +86,7 @@ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, in
     unsigned char pixelsG[2][2] = {0};
     unsigned char pixelsB[2][2] = {0};
 
-    Pixel *ptrPixel = (Pixel *)&originalImage[0];
+    Pixel *ptrPixel = (Pixel *)&originalImage[1];
     unsigned char finalPixelR = ptrPixel->r;
     unsigned char finalPixelG = ptrPixel->g;
     unsigned char finalPixelB = ptrPixel->b;
@@ -155,7 +155,7 @@ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, in
             ptrPixelMinPooling->r = finalPixelR;
             ptrPixelMinPooling->g = finalPixelG;
             ptrPixelMinPooling->b = finalPixelB;
-            ptrPixelMinPooling->a = finalPixelA;
+            ptrPixelMinPooling->a = 255;
 
             counter++;
         }
@@ -261,7 +261,7 @@ int main(int argc, char **argv)
 
     // Write image back to disk
     printf("Writing min pooling png to disk...\r\n");
-    stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * width);
+    stbi_write_png(fileNameOutMinPooling, width, height, 4, imageDataMinPooling, 4 * width);
     printf("DONE\r\n");
     /*
     printf("Processing image maximum pooling\r\n");
