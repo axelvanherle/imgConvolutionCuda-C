@@ -82,12 +82,12 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
 
 void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
-    int pixelsR[2][2] = {0};
-    int pixelsG[2][2] = {0};
-    int pixelsB[2][2] = {0};
-    int finalPixelR = 300;
-    int finalPixelG = 300;
-    int finalPixelB = 300;
+    unsigned char pixelsR[2][2] = {0};
+    unsigned char pixelsG[2][2] = {0};
+    unsigned char pixelsB[2][2] = {0};
+    unsigned char finalPixelR = 300;
+    unsigned char finalPixelG = 300;
+    unsigned char finalPixelB = 300;
 
     for(int y = 0; y < height; y += 2)
     {
