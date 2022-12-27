@@ -35,43 +35,121 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
     }
 }
 
-/*
-    This function convolves the image.
-*/
-void convolveImage(unsigned char *imageRGBA, int width, int height)
+void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
+    int kernel[3][3] =
+        {
+            {1, 0, -1},
+            {1, 0, -1},
+            {1, 0, -1}};
+
+    int pixels[3][3] = {0};
+    int finalPixel = 0;
+
     for (int y = 0; y < height - 2; y++)
     {
         for (int x = 0; x < width - 2; x++)
         {
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
+
+                pixels[0][i] = ptrPixel->r * kernel[0][i];
             }
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
+
+                pixels[1][i] = ptrPixel->r * kernel[1][i];
             }
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
-                unsigned char pixelValue = 255;
-                ptrPixel->r = pixelValue;
-                ptrPixel->g = pixelValue;
-                ptrPixel->b = pixelValue;
-                ptrPixel->a = 255;
+
+                pixels[2][i] = ptrPixel->r * kernel[2][i];
+            }
+
+            finalPixel = (pixels[0][0] + pixels[0][1] + pixels[0][2] + pixels[1][0] + pixels[1][1] + pixels[1][2] + pixels[2][0] + pixels[2][1] + pixels[2][2]) / 9;
+
+            Pixel *ptrPixel = (Pixel *)&imageTest[(y * width * 4 + 4 * x)];
+            ptrPixel->r = finalPixel;
+            ptrPixel->g = finalPixel;
+            ptrPixel->b = finalPixel;
+            ptrPixel->a = 255;
+        }
+    }
+}
+
+/*
+    This function convolves the image.
+*/
+void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
+{
+    int counter = 0;
+
+    // Iterate over the image in 2x2 blocks
+    for (int y = 0; y < height; y += 2)
+    {
+        for (int x = 0; x < width; x += 2)
+        {
+            // For each channel, find the maximum value in the 2x2 block
+            for (int c = 0; c < 4; c++)
+            {
+                Pixel *ptrPixelMinPooling = (Pixel *)&minPoolingImage[counter];
+                unsigned char min = 255;
+                for (int dy = 0; dy < 2; dy++)
+                {
+                    for (int dx = 0; dx < 2; dx++)
+                    {
+                        // Calculate the index of the current pixel in the 1D array
+                        int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
+                        unsigned char value = originalImage[index];
+                        min = (value < min) ? value : min;
+                    }
+                }
+                // Store the minimum value in the result array
+                ptrPixelMinPooling->r = min;
+                ptrPixelMinPooling->g = min;
+                ptrPixelMinPooling->b = min;
+                ptrPixelMinPooling->a = min;
+                counter++;
+            }
+        }
+    }
+}
+
+void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height)
+{
+    int counter = 0;
+
+    // Iterate over the image in 2x2 blocks
+    for (int y = 0; y < height; y += 2)
+    {
+        for (int x = 0; x < width; x += 2)
+        {
+            // For each channel, find the maximum value in the 2x2 block
+            for (int c = 0; c < 4; c++)
+            {
+                Pixel *ptrPixelMaxPooling = (Pixel *)&maxPoolingImage[counter];
+                unsigned char max = 0;
+                for (int dy = 0; dy < 2; dy++)
+                {
+                    for (int dx = 0; dx < 2; dx++)
+                    {
+                        // Calculate the index of the current pixel in the 1D array
+                        int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
+                        unsigned char value = originalImage[index];
+                        max = (value > max) ? value : max;
+                    }
+                }
+                // Store the maximum value in the result array
+                ptrPixelMaxPooling->r = max;
+                ptrPixelMaxPooling->g = max;
+                ptrPixelMaxPooling->b = max;
+                ptrPixelMaxPooling->a = max;
+                counter++;
             }
         }
     }
