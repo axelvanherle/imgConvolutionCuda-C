@@ -85,9 +85,11 @@ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, in
     unsigned char pixelsR[2][2] = {0};
     unsigned char pixelsG[2][2] = {0};
     unsigned char pixelsB[2][2] = {0};
-    unsigned char finalPixelR = 1000;
-    unsigned char finalPixelG = 1000;
-    unsigned char finalPixelB = 1000;
+
+    Pixel *ptrPixel = (Pixel *)&originalImage[0];
+    unsigned char finalPixelR = ptrPixel->r;
+    unsigned char finalPixelG = ptrPixel->g;
+    unsigned char finalPixelB = ptrPixel->b;
 
     for(int y = 0; y < height; y += 2)
     {
@@ -148,7 +150,7 @@ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, in
             ptrPixel->r = finalPixelR;
             ptrPixel->g = finalPixelG;
             ptrPixel->b = finalPixelB;
-            ptrPixel->a = 0;
+            ptrPixel->a = 255;
         }
     }
 }
