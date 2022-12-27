@@ -12,6 +12,95 @@ typedef struct Pixel
     unsigned char r, g, b, a;
 } Pixel;
 
+void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGBA, int width, int height);
+void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height);
+void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height);
+void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height);
+
+int main(int argc, char **argv)
+{
+    // Open image
+    int width, height, componentCount;
+    printf("Loading png file...\r\n");
+    unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
+    unsigned char *imageData = (unsigned char *)malloc(width * height * 4);                     // Saves grayscale image
+    unsigned char *imageDataTest = (unsigned char *)malloc(width * height * 4);                 // Saves output image
+    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4);           // Saves Min pooling image
+    unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4);           // Saves Max pooling image
+
+    if (!originalImage)
+    {
+        printf("Failed to open Image\r\n");
+        stbi_image_free(originalImage);
+        free(imageData);
+        free(imageDataTest);
+        free(imageDataMinPooling);
+        free(imageDataMaxPooling);
+        return -1;
+    }
+
+    printf("DONE \r\n");
+
+    // Validate image sizes
+    if (width % 32 || height % 32)
+    {
+        // NOTE: Leaked memory of "imageData"
+        printf("Width and/or Height is not dividable by 32!\r\n");
+        stbi_image_free(originalImage);
+        free(imageData);
+        free(imageDataTest);
+        free(imageDataMinPooling);
+        free(imageDataMaxPooling);
+        return -1;
+    }
+
+    // Process image on cpu
+    printf("Processing image grayscale...:\r\n");
+    ConvertImageToGrayCpu(originalImage, imageData, width, height);
+    printf("DONE \r\n");
+
+    // Process image on cpu
+    printf("Processing image convolution...:\r\n");
+    convolveImage(imageData, imageDataTest, width, height);
+    printf("DONE \r\n");
+
+    // Build output filename
+    const char *fileNameOutConvolution = "OutputConvolution.png";
+    const char *fileNameOutMinPooling = "OutputMinPooling.png";
+    const char *fileNameOutMaxPooling = "OutputMaxPooling.png";
+
+    // Write image back to disk
+    printf("Writing convolved png to disk...\r\n");
+    stbi_write_png(fileNameOutConvolution, width - 2, height - 2, 4, imageDataTest, 4 * width);
+    printf("DONE\r\n");
+
+    printf("Processing image minimum pooling\r\n");
+    minPooling(originalImage, imageDataMinPooling, width, height);
+    printf("DONE\r\n");
+
+    // Write image back to disk
+    printf("Writing min pooling png to disk...\r\n");
+    stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * (width / 2));
+    printf("DONE\r\n");
+
+    printf("Processing image maximum pooling\r\n");
+    maxPooling(originalImage, imageDataMaxPooling, width, height);
+    printf("DONE\r\n");
+
+    // Write image back to disk
+    printf("Writing max pooling png to disk...\r\n");
+    stbi_write_png(fileNameOutMaxPooling, width / 2, height / 2, 4, imageDataMaxPooling, 4 * (width / 2));
+    printf("DONE\r\n");
+
+    stbi_image_free(originalImage);
+    free(imageData);
+    free(imageDataTest);
+    free(imageDataMinPooling);
+    free(imageDataMaxPooling);
+
+    return 0;
+}
+
 void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGBA, int width, int height)
 {
     for (int y = 0; y < height; y++)
@@ -29,9 +118,6 @@ void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGB
     }
 }
 
-/*
-    This function convolves the image.
-*/
 void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
     int kernel[3][3] =
@@ -147,87 +233,4 @@ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, in
             }
         }
     }
-}
-
-int main(int argc, char **argv)
-{
-    // Open image
-    int width, height, componentCount;
-    printf("Loading png file...\r\n");
-    unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
-    unsigned char *imageData = (unsigned char *)malloc(width * height * 4);                     // Saves grayscale image
-    unsigned char *imageDataTest = (unsigned char *)malloc(width * height * 4);                 // Saves output image
-    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4);           // Saves Min pooling image
-    unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4);           // Saves Max pooling image
-    if (!originalImage)
-    {
-        printf("Failed to open Image\r\n");
-        stbi_image_free(originalImage);
-        free(imageData);
-        free(imageDataTest);
-        free(imageDataMinPooling);
-        free(imageDataMaxPooling);
-        return -1;
-    }
-
-    printf("DONE \r\n");
-
-    // Validate image sizes
-    if (width % 32 || height % 32)
-    {
-        // NOTE: Leaked memory of "imageData"
-        printf("Width and/or Height is not dividable by 32!\r\n");
-        stbi_image_free(originalImage);
-        free(imageData);
-        free(imageDataTest);
-        free(imageDataMinPooling);
-        free(imageDataMaxPooling);
-        return -1;
-    }
-
-    // Process image on cpu
-    printf("Processing image grayscale...:\r\n");
-    ConvertImageToGrayCpu(originalImage, imageData, width, height);
-    printf("DONE \r\n");
-
-    // Process image on cpu
-    printf("Processing image convolution...:\r\n");
-    convolveImage(imageData, imageDataTest, width, height);
-    printf("DONE \r\n");
-
-    // Build output filename
-    const char *fileNameOutConvolution = "OutputConvolution.png";
-    const char *fileNameOutMinPooling = "OutputMinPooling.png";
-    const char *fileNameOutMaxPooling = "OutputMaxPooling.png";
-
-    // Write image back to disk
-    printf("Writing convolved png to disk...\r\n");
-    stbi_write_png(fileNameOutConvolution, width - 2, height - 2, 4, imageDataTest, 4 * width);
-    printf("DONE\r\n");
-
-    printf("Processing image minimum pooling\r\n");
-    minPooling(originalImage, imageDataMinPooling, width, height);
-    printf("DONE\r\n");
-
-    // Write image back to disk
-    printf("Writing min pooling png to disk...\r\n");
-    stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * (width / 2));
-    printf("DONE\r\n");
-
-    printf("Processing image maximum pooling\r\n");
-    maxPooling(originalImage, imageDataMaxPooling, width, height);
-    printf("DONE\r\n");
-
-    // Write image back to disk
-    printf("Writing max pooling png to disk...\r\n");
-    stbi_write_png(fileNameOutMaxPooling, width / 2, height / 2, 4, imageDataMaxPooling, 4 * (width / 2));
-    printf("DONE\r\n");
-
-    stbi_image_free(originalImage);
-    free(imageData);
-    free(imageDataTest);
-    free(imageDataMinPooling);
-    free(imageDataMaxPooling);
-
-    return 0;
 }
