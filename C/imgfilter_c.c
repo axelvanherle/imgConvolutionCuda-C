@@ -164,7 +164,30 @@ void minPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, i
 
 void maxPooling(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
 {
-
+    for (int y = 0; y < height; y += 2)
+    {
+        for (int x = 0; x < width; x += 2)
+        {
+            // For each channel, find the maximum value in the 2x2 block
+            for (int c = 0; c < 4; c++)
+            {
+                unsigned char max = 0;
+                for (int dy = 0; dy < 2; dy++)
+                {
+                    for (int dx = 0; dx < 2; dx++)
+                    {
+                        //unsigned char value = imageRGBA[y + dy][x + dx][c];
+                        if (value > max)
+                        {
+                            max = value;
+                        }
+                    }
+                }
+                // Store the maximum value in the result array
+                //imageTest[y / 2][x / 2][c] = max;
+            }
+        }
+    }
 }
 
 int main(int argc, char **argv)
@@ -172,8 +195,8 @@ int main(int argc, char **argv)
     // Open image
     int width, height, componentCount;
     printf("Loading png file...\r\n");
-    unsigned char *imageData = (unsigned char *)malloc(width*height*4); // Saves grayscale image
-    unsigned char *imageDataTest = (unsigned char *)malloc(width*height*4); // Saves output image
+    unsigned char *imageData = (unsigned char *)malloc(width * height * 4);                     // Saves grayscale image
+    unsigned char *imageDataTest = (unsigned char *)malloc(width * height * 4);                 // Saves output image
     unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
     if (!originalImage)
     {
@@ -236,7 +259,7 @@ int main(int argc, char **argv)
     printf("Writing min pooling png to disk...\r\n");
     stbi_write_png(fileNameOutMinPooling, width / 3, height / 3, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
-    /*
+    
     printf("Processing image maximum pooling\r\n");
     maxPooling(originalImage, imageDataTest, width, height);
     printf("DONE\r\n");
@@ -245,7 +268,7 @@ int main(int argc, char **argv)
     printf("Writing max pooling png to disk...\r\n");
     stbi_write_png(fileNameOutMaxPooling, width / 3, height / 3, 4, imageDataTest, 4 * width);
     printf("DONE\r\n");
-    */
+    
     stbi_image_free(imageData);
     free(imageDataTest);
     free(originalImage);
