@@ -192,6 +192,11 @@ void *runThreads(void *vargp)
     ConvertImageToGrayCpu(imageData, width, height);
     printf(" DONE %s\r\n", INPUT_IMAGE);
 
+    // Process image on cpu
+    printf("Processing image...:\r\n");
+    convolveImage(imageData, width, height);
+    printf(" DONE \r\n");
+
     // Build output filename
     char OUTPUT_IMAGE[32] = "Output_Images/gray";
     char result1[3];
@@ -199,11 +204,6 @@ void *runThreads(void *vargp)
     strcat(OUTPUT_IMAGE, result1);
     strcat(OUTPUT_IMAGE, ".png");
     const char *fileNameOut = OUTPUT_IMAGE;
-
-    // Process image on cpu
-    printf("Processing image...:\r\n");
-    convolveImage(imageData, width, height);
-    printf(" DONE \r\n");
 
     // Write image back to disk
     printf("Writing %s to disk...\r\n", INPUT_IMAGE);
