@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <time.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
@@ -19,14 +20,128 @@ typedef struct Pixel
 } Pixel;
 
 // Function to convert the image from colour to grayscale.
-void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
+void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGBA, int width, int height);
+void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height);
+void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height);
+void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height);
+
+// This function runs all the threads
+void *runThreads(void *vargp)
+{
+    clock_t timer_start, timer_end;
+    timer_start = clock(); // Start the timer
+    // Get which thread we are in, and do ++ for the next thread.
+    int threadId = threadNumber++;
+
+    char inputImage[64] = "Images/img";
+    char outputImageConvolution[64] = "Output_Images/Convolution/img";
+    char outputImagePoolingMax[64] = "Output_Images/Pooling/imgMax";
+    char outputImagePoolingMin[64] = "Output_Images/Pooling/imgMin";
+    char imageNumber[3];
+
+    // Make a complete path for the input (inputImage + imageNumber + extention)
+    sprintf(imageNumber, "%d", threadId); // Get the number of the current iteration and convert it to char imageNumber
+    strcat(inputImage, imageNumber);
+    strcat(inputImage, ".png");
+
+    // Open image
+    int width, height, componentCount;
+    unsigned char *originalImage = stbi_load(inputImage, &width, &height, &componentCount, 4); // Saves original image
+    if (!originalImage)
+    {
+        printf("Failed to open Image\r\n");
+        exit(-1);
+    }
+
+    // Validate image sizes
+    if (width % 32 || height % 32)
+    {
+        // NOTE: Leaked memory of "imageData"
+        printf("Width and/or Height is not dividable by 32! ( %s )\r\n", inputImage);
+        exit(-1);
+    }
+
+    unsigned char *imageData = (unsigned char *)malloc(width * height * 4);           // Saves grayscale image
+    unsigned char *imageDataTest = (unsigned char *)malloc(width * height * 4);       // Saves output image
+    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4); // Saves Min pooling image
+    unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4); // Saves Max pooling image
+
+    // Process image on cpu
+    ConvertImageToGrayCpu(originalImage, imageData, width, height);
+
+    ////////////////////
+    // Convolve image //
+    ////////////////////
+    // Process image on cpu
+    convolveImage(imageData, imageDataTest, width, height);
+
+    // Make a complete path for the convolved image (outputImage convolution + imageNumber + extention)
+    strcat(outputImageConvolution, imageNumber);
+    strcat(outputImageConvolution, ".png");
+
+    // Write image back to disk
+    stbi_write_png(outputImageConvolution, width, height, 4, imageDataTest, 4 * width);
+
+    /////////////////
+    // Min Pooling //
+    /////////////////
+    // Make a complete path for max pooling
+    sprintf(imageNumber, "%d", threadId); // Get the number of the current iteration and convert it to char imageNumber
+    strcat(outputImagePoolingMin, imageNumber);
+    strcat(outputImagePoolingMin, ".png");
+
+    minPooling(originalImage, imageDataMinPooling, width, height);
+
+    // Write image back to disk
+    stbi_write_png(outputImagePoolingMin, width / 2, height / 2, 4, imageDataMinPooling, 4 * (width / 2));
+
+    /////////////////
+    // Max Pooling //
+    /////////////////
+    sprintf(imageNumber, "%d", threadId); // Get the number of the current iteration and convert it to char imageNumber
+    strcat(outputImagePoolingMax, imageNumber);
+    strcat(outputImagePoolingMax, ".png");
+
+    maxPooling(originalImage, imageDataMaxPooling, width, height);
+
+    // Write image back to disk
+    stbi_write_png(outputImagePoolingMax, width / 2, height / 2, 4, imageDataMaxPooling, 4 * (width / 2));
+
+    stbi_image_free(originalImage);
+    free(imageData);
+    free(imageDataTest);
+    free(imageDataMinPooling);
+    free(imageDataMaxPooling);
+
+    timer_end = clock(); // end the timer
+    double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
+    printf("\n----------\n%s took %.3fs\n----------\n",inputImage, time_spent);
+    return NULL;
+}
+
+int main()
+{
+    pthread_t tid;
+
+    // Make NUM_THREADS amount of threads.
+    for (int i = 0; i <= NUM_THREADS; i++)
+    {
+        pthread_create(&tid, NULL, runThreads, NULL);
+    }
+
+    pthread_exit(NULL);
+    return 0;
+}
+
+void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGBA, int width, int height)
 {
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
             Pixel *ptrPixel = (Pixel *)&imageRGBA[y * width * 4 + 4 * x];
-            unsigned char pixelValue = (unsigned char)(ptrPixel->r * 0.2126f + ptrPixel->g * 0.7152f + ptrPixel->b * 0.0722f);
+            Pixel *ptrPixelOriginal = (Pixel *)&originalImage[y * width * 4 + 4 * x];
+            unsigned char pixelValue = (unsigned char)(ptrPixelOriginal->r * 0.2126f + ptrPixelOriginal->g * 0.7152f + ptrPixelOriginal->b * 0.0722f);
             ptrPixel->r = pixelValue;
             ptrPixel->g = pixelValue;
             ptrPixel->b = pixelValue;
@@ -82,9 +197,6 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
     }
 }
 
-/*
-    This function convolves the image.
-*/
 void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
 {
     int counter = 0;
@@ -153,94 +265,4 @@ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, in
             }
         }
     }
-}
-
-// This function runs all the threads
-void *runThreads(void *vargp)
-{
-    // Get which thread we are in, and do + for the next thread.
-    int threadId = threadNumber++;
-
-    // Make a usefull string that we can use to open the correct image.
-    char INPUT_IMAGE[32] = "Images/img";
-    char result[3];
-    sprintf(result, "%d", threadId);
-    strcat(INPUT_IMAGE, result);
-    strcat(INPUT_IMAGE, ".png");
-
-    // Build output filename
-    char OUTPUT_IMAGE[32] = "Output_Images/Convolution/img";
-    char outputImageConvolution[32] = "Output_Images/Convolution/img";
-    char outputImagePoolingMax[32] = "Output_Images/Pooling/imgMax";
-    char outputImagePoolingMin[32] = "Output_Images/Pooling/imgMin";
-
-    strcat(outputImageConvolution, result);
-    strcat(outputImageConvolution, ".png");
-    const char *fileNameOutConvolution = outputImageConvolution;
-
-    strcat(outputImagePoolingMax, result);
-    strcat(outputImagePoolingMax, ".png");
-    const char *fileNameOutPoolingMax = outputImagePoolingMax;
-
-    strcat(outputImagePoolingMin, result);
-    strcat(outputImagePoolingMin, ".png");
-    const char *fileNameOutPoolingMin = outputImagePoolingMin;
-
-    // Open image
-    int width, height, componentCount;
-    printf("Loading %s file...\r\n", INPUT_IMAGE);
-    unsigned char *imageData = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4);
-    if (!imageData)
-    {
-        printf("Failed to open Image\r\n");
-        exit(-1);
-    }
-    printf(" DONE %s\r\n", INPUT_IMAGE);
-
-    // Validate image sizes
-    if (width % 32 || height % 32)
-    {
-        // NOTE: Leaked memory of "imageData"
-        printf("Width and/or Height is not dividable by 32! ( %s )\r\n", INPUT_IMAGE);
-        exit(-1);
-    }
-
-    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4); // Saves Min pooling image
-    unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4); // Saves Max pooling image
-
-    // Process image on cpu
-    printf("Processing %s...:\r\n", INPUT_IMAGE);
-    ConvertImageToGrayCpu(imageData, width, height);
-    printf(" DONE %s\r\n", INPUT_IMAGE);
-
-    // Process image on cpu
-    printf("Processing image...:\r\n");
-    convolveImage(imageData, width, height);
-    printf(" DONE \r\n");
-
-    // Write image back to disk
-    printf("Writing %s to disk...\r\n", INPUT_IMAGE);
-    stbi_write_png(outputImageConvolution, width, height, 4, imageData, 4 * width);
-    printf("DONE\r\n");
-
-    printf("Processing image minimum pooling\r\n");
-    minPooling(originalImage, imageDataMinPooling, width, height);
-    printf("DONE\r\n");
-
-    stbi_image_free(imageData);
-    return NULL;
-}
-
-int main()
-{
-    pthread_t tid;
-
-    // Make NUM_THREADS amount of threads.
-    for (int i = 0; i <= NUM_THREADS; i++)
-    {
-        pthread_create(&tid, NULL, runThreads, NULL);
-    }
-
-    pthread_exit(NULL);
-    return 0;
 }
