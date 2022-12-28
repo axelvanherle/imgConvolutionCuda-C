@@ -70,6 +70,7 @@ int main()
         }
 
         printf("Done\r\n");
+
         ///////////////////////
         // Convert Grayscale //
         ///////////////////////
@@ -103,6 +104,8 @@ int main()
         strcat(outputImagePoolingMin, imageNumber);
         strcat(outputImagePoolingMin, ".png");
 
+        printf("DONE\r\n");
+
         /////////////////
         // Max Pooling //
         /////////////////
@@ -119,7 +122,7 @@ int main()
         // Free memory from imageDataMinPooling
         // Free memory from imageDataMaxPooling
 
-        printf("\r\n");
+        printf("\r\nNext Image\r\n");
     }
 
     ///////////////
