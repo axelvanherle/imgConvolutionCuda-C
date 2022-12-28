@@ -13,8 +13,8 @@ typedef struct Pixel
     unsigned char r, g, b, a;
 } Pixel;
 
-void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGBA, int width, int height);
-void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height);
+void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageDataGrayscale, int width, int height);
+void convolveImage(unsigned char *imageDataGrayscale, unsigned char *imageDataConvolution, int width, int height);
 void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height);
 void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height);
 
@@ -27,8 +27,8 @@ int main(int argc, char **argv)
     int width, height, componentCount;
     printf("Loading png file...\r\n");
     unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
-    unsigned char *imageData = (unsigned char *)malloc(width * height * 4);                     // Saves grayscale image
-    unsigned char *imageDataTest = (unsigned char *)malloc(width * height * 4);                 // Saves output image
+    unsigned char *imageDataGrayscale = (unsigned char *)malloc(width * height * 4);            // Saves grayscale image
+    unsigned char *imageDataConvolution = (unsigned char *)malloc(width * height * 4);          // Saves output image
     unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4);           // Saves Min pooling image
     unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4);           // Saves Max pooling image
 
@@ -36,8 +36,8 @@ int main(int argc, char **argv)
     {
         printf("Failed to open Image\r\n");
         stbi_image_free(originalImage);
-        free(imageData);
-        free(imageDataTest);
+        free(imageDataGrayscale);
+        free(imageDataConvolution);
         free(imageDataMinPooling);
         free(imageDataMaxPooling);
         return -1;
@@ -48,11 +48,11 @@ int main(int argc, char **argv)
     // Validate image sizes
     if (width % 32 || height % 32)
     {
-        // NOTE: Leaked memory of "imageData"
+        // NOTE: Leaked memory of "imageDataGrayscale"
         printf("Width and/or Height is not dividable by 32!\r\n");
         stbi_image_free(originalImage);
-        free(imageData);
-        free(imageDataTest);
+        free(imageDataGrayscale);
+        free(imageDataConvolution);
         free(imageDataMinPooling);
         free(imageDataMaxPooling);
         return -1;
@@ -60,12 +60,12 @@ int main(int argc, char **argv)
 
     // Process image on cpu
     printf("Processing image grayscale...:\r\n");
-    ConvertImageToGrayCpu(originalImage, imageData, width, height);
+    ConvertImageToGrayCpu(originalImage, imageDataGrayscale, width, height);
     printf("DONE \r\n");
 
     // Process image on cpu
     printf("Processing image convolution...:\r\n");
-    convolveImage(imageData, imageDataTest, width, height);
+    convolveImage(imageDataGrayscale, imageDataConvolution, width, height);
     printf("DONE \r\n");
 
     // Build output filename
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
     // Write image back to disk
     printf("Writing convolved png to disk...\r\n");
-    stbi_write_png(fileNameOutConvolution, width - 2, height - 2, 4, imageDataTest, 4 * width);
+    stbi_write_png(fileNameOutConvolution, width - 2, height - 2, 4, imageDataConvolution, 4 * width);
     printf("DONE\r\n");
 
     printf("Processing image minimum pooling\r\n");
@@ -97,8 +97,8 @@ int main(int argc, char **argv)
     printf("DONE\r\n");
 
     stbi_image_free(originalImage);
-    free(imageData);
-    free(imageDataTest);
+    free(imageDataGrayscale);
+    free(imageDataConvolution);
     free(imageDataMinPooling);
     free(imageDataMaxPooling);
 
@@ -109,13 +109,13 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGBA, int width, int height)
+void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageDataGrayscale, int width, int height)
 {
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-            Pixel *ptrPixel = (Pixel *)&imageRGBA[y * width * 4 + 4 * x];
+            Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[y * width * 4 + 4 * x];
             Pixel *ptrPixelOriginal = (Pixel *)&originalImage[y * width * 4 + 4 * x];
             unsigned char pixelValue = (unsigned char)(ptrPixelOriginal->r * 0.2126f + ptrPixelOriginal->g * 0.7152f + ptrPixelOriginal->b * 0.0722f);
             ptrPixel->r = pixelValue;
@@ -126,7 +126,7 @@ void ConvertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageRGB
     }
 }
 
-void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width, int height)
+void convolveImage(unsigned char *imageDataGrayscale, unsigned char *imageDataConvolution, int width, int height)
 {
     int kernel[3][3] =
         {
@@ -143,28 +143,28 @@ void convolveImage(unsigned char *imageRGBA, unsigned char *imageTest, int width
         {
             for (int i = 0; i <= 2; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
+                Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[(y * width * 4 + 4 * x) + i * 4];
 
                 pixels[0][i] = ptrPixel->r * kernel[0][i];
             }
 
             for (int i = 0; i <= 2; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
+                Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[(y * width * 4 + 4 * x) + width * 4 + i * 4];
 
                 pixels[1][i] = ptrPixel->r * kernel[1][i];
             }
 
             for (int i = 0; i <= 2; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
+                Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
 
                 pixels[2][i] = ptrPixel->r * kernel[2][i];
             }
 
             finalPixel = (pixels[0][0] + pixels[0][1] + pixels[0][2] + pixels[1][0] + pixels[1][1] + pixels[1][2] + pixels[2][0] + pixels[2][1] + pixels[2][2]) / 9;
 
-            Pixel *ptrPixel = (Pixel *)&imageTest[(y * width * 4 + 4 * x)];
+            Pixel *ptrPixel = (Pixel *)&imageDataConvolution[(y * width * 4 + 4 * x)];
             ptrPixel->r = finalPixel;
             ptrPixel->g = finalPixel;
             ptrPixel->b = finalPixel;
