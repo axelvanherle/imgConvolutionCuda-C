@@ -168,6 +168,24 @@ void *runThreads(void *vargp)
     strcat(INPUT_IMAGE, result);
     strcat(INPUT_IMAGE, ".png");
 
+    // Build output filename
+    char OUTPUT_IMAGE[32] = "Output_Images/Convolution/img";
+    char outputImageConvolution[32] = "Output_Images/Convolution/img";
+    char outputImagePoolingMax[32] = "Output_Images/Pooling/imgMax";
+    char outputImagePoolingMin[32] = "Output_Images/Pooling/imgMin";
+
+    strcat(outputImageConvolution, result);
+    strcat(outputImageConvolution, ".png");
+    const char *fileNameOutConvolution = outputImageConvolution;
+
+    strcat(outputImagePoolingMax, result);
+    strcat(outputImagePoolingMax, ".png");
+    const char *fileNameOutPoolingMax = outputImagePoolingMax;
+
+    strcat(outputImagePoolingMin, result);
+    strcat(outputImagePoolingMin, ".png");
+    const char *fileNameOutPoolingMin = outputImagePoolingMin;
+
     // Open image
     int width, height, componentCount;
     printf("Loading %s file...\r\n", INPUT_IMAGE);
@@ -187,6 +205,9 @@ void *runThreads(void *vargp)
         exit(-1);
     }
 
+    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4); // Saves Min pooling image
+    unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4); // Saves Max pooling image
+
     // Process image on cpu
     printf("Processing %s...:\r\n", INPUT_IMAGE);
     ConvertImageToGrayCpu(imageData, width, height);
@@ -197,17 +218,13 @@ void *runThreads(void *vargp)
     convolveImage(imageData, width, height);
     printf(" DONE \r\n");
 
-    // Build output filename
-    char OUTPUT_IMAGE[32] = "Output_Images/gray";
-    char result1[3];
-    sprintf(result1, "%d", threadId);
-    strcat(OUTPUT_IMAGE, result1);
-    strcat(OUTPUT_IMAGE, ".png");
-    const char *fileNameOut = OUTPUT_IMAGE;
-
     // Write image back to disk
     printf("Writing %s to disk...\r\n", INPUT_IMAGE);
-    stbi_write_png(fileNameOut, width, height, 4, imageData, 4 * width);
+    stbi_write_png(outputImageConvolution, width, height, 4, imageData, 4 * width);
+    printf("DONE\r\n");
+
+    printf("Processing image minimum pooling\r\n");
+    minPooling(originalImage, imageDataMinPooling, width, height);
     printf("DONE\r\n");
 
     stbi_image_free(imageData);
