@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
     // Open image
     int width, height, componentCount;
-    printf("Loading png file...\r\n");
+    printf("Loading png file\r\n");
     unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
     unsigned char *imageDataGrayscale = (unsigned char *)malloc(width * height * 4);            // Saves grayscale image
     unsigned char *imageDataConvolution = (unsigned char *)malloc(width * height * 4);          // Saves output image
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    printf("DONE \r\n");
+    printf("Done\r\n");
 
     // Validate image sizes
     if (width % 32 || height % 32)
@@ -59,42 +59,42 @@ int main(int argc, char **argv)
     }
 
     // Process image on cpu
-    printf("Processing image grayscale...:\r\n");
+    printf("Processing image grayscale\r\n");
     ConvertImageToGrayCpu(originalImage, imageDataGrayscale, width, height);
-    printf("DONE \r\n");
+    printf("Done\r\n");
 
     // Process image on cpu
-    printf("Processing image convolution...:\r\n");
+    printf("Processing image convolution\r\n");
     convolveImage(imageDataGrayscale, imageDataConvolution, width, height);
-    printf("DONE \r\n");
+    printf("Done\r\n");
 
     // Build output filename
-    const char *fileNameOutConvolution = "OutputConvolution.png";
-    const char *fileNameOutMinPooling = "OutputMinPooling.png";
-    const char *fileNameOutMaxPooling = "OutputMaxPooling.png";
+    const char *fileNameOutConvolution = "Output_Images/Convolution/OutputConvolution.png";
+    const char *fileNameOutMinPooling = "Output_Images/Pooling/OutputMinPooling.png";
+    const char *fileNameOutMaxPooling = "Output_Images/Pooling/OutputMaxPooling.png";
 
     // Write image back to disk
-    printf("Writing convolved png to disk...\r\n");
+    printf("Writing convolved png to disk\r\n");
     stbi_write_png(fileNameOutConvolution, width - 2, height - 2, 4, imageDataConvolution, 4 * width);
-    printf("DONE\r\n");
+    printf("Done\r\n");
 
     printf("Processing image minimum pooling\r\n");
     minPooling(originalImage, imageDataMinPooling, width, height);
-    printf("DONE\r\n");
+    printf("Done\r\n");
 
     // Write image back to disk
-    printf("Writing min pooling png to disk...\r\n");
+    printf("Writing min pooling png to disk\r\n");
     stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * (width / 2));
-    printf("DONE\r\n");
+    printf("Done\r\n");
 
     printf("Processing image maximum pooling\r\n");
     maxPooling(originalImage, imageDataMaxPooling, width, height);
-    printf("DONE\r\n");
+    printf("Done\r\n");
 
     // Write image back to disk
-    printf("Writing max pooling png to disk...\r\n");
+    printf("Writing max pooling png to disk\r\n");
     stbi_write_png(fileNameOutMaxPooling, width / 2, height / 2, 4, imageDataMaxPooling, 4 * (width / 2));
-    printf("DONE\r\n");
+    printf("Done\r\n");
 
     stbi_image_free(originalImage);
     free(imageDataGrayscale);
