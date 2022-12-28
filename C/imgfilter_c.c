@@ -4,8 +4,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
 #include "stb_image_write.h"
+#include <time.h>
 
-#define INPUT_IMAGE "Images/img0.png"
+#define INPUT_IMAGE "Images/img9.png"
 
 typedef struct Pixel
 {
@@ -19,6 +20,9 @@ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, in
 
 int main(int argc, char **argv)
 {
+    clock_t timer_start, timer_end;
+    timer_start = clock();
+
     // Open image
     int width, height, componentCount;
     printf("Loading png file...\r\n");
@@ -97,6 +101,10 @@ int main(int argc, char **argv)
     free(imageDataTest);
     free(imageDataMinPooling);
     free(imageDataMaxPooling);
+
+    timer_end = clock(); // end the timer
+    double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
+    printf("\nProgram time: %.3fs\n", time_spent);
 
     return 0;
 }

@@ -4,125 +4,127 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
 #include "stb_image_write.h"
+#include <string.h>
 #include <time.h>
-
-// Hard coded the input files
-#define INPUT_IMAGE_0  "Images/img0.png"
-#define INPUT_IMAGE_1  "Images/img1.png"
-#define INPUT_IMAGE_2  "Images/img2.png"
-#define INPUT_IMAGE_3  "Images/img3.png"
-#define INPUT_IMAGE_4  "Images/img4.png"
-#define INPUT_IMAGE_5  "Images/img5.png"
-#define INPUT_IMAGE_6  "Images/img6.png"
-#define INPUT_IMAGE_7  "Images/img7.png"
-#define INPUT_IMAGE_8  "Images/img8.png"
-#define INPUT_IMAGE_9  "Images/img9.png"
-
-// Hard coded the output files grayscale
-#define OUTPUT_IMAGE_0  "Output_Images/Grayscale/img0.png"
-#define OUTPUT_IMAGE_1  "Output_Images/Grayscale/img1.png"
-#define OUTPUT_IMAGE_2  "Output_Images/Grayscale/img2.png"
-#define OUTPUT_IMAGE_3  "Output_Images/Grayscale/img3.png"
-#define OUTPUT_IMAGE_4  "Output_Images/Grayscale/img4.png"
-#define OUTPUT_IMAGE_5  "Output_Images/Grayscale/img5.png"
-#define OUTPUT_IMAGE_6  "Output_Images/Grayscale/img6.png"
-#define OUTPUT_IMAGE_7  "Output_Images/Grayscale/img7.png"
-#define OUTPUT_IMAGE_8  "Output_Images/Grayscale/img8.png"
-#define OUTPUT_IMAGE_9  "Output_Images/Grayscale/img9.png"
-
-// Hard coded the output files for convolution
-#define OUTPUT_IMAGE_0_CONVOLVE  "Output_Images/Convolution/img0_convolution.png"
-#define OUTPUT_IMAGE_1_CONVOLVE  "Output_Images/Convolution/img1_convolution.png"
-#define OUTPUT_IMAGE_2_CONVOLVE  "Output_Images/Convolution/img2_convolution.png"
-#define OUTPUT_IMAGE_3_CONVOLVE  "Output_Images/Convolution/img3_convolution.png"
-#define OUTPUT_IMAGE_4_CONVOLVE  "Output_Images/Convolution/img4_convolution.png"
-#define OUTPUT_IMAGE_5_CONVOLVE  "Output_Images/Convolution/img5_convolution.png"
-#define OUTPUT_IMAGE_6_CONVOLVE  "Output_Images/Convolution/img6_convolution.png"
-#define OUTPUT_IMAGE_7_CONVOLVE  "Output_Images/Convolution/img7_convolution.png"
-#define OUTPUT_IMAGE_8_CONVOLVE  "Output_Images/Convolution/img8_convolution.png"
-#define OUTPUT_IMAGE_9_CONVOLVE  "Output_Images/Convolution/img9_convolution.png"
-
-// Hard coded the output files for max pooling
-#define OUTPUT_IMAGE_0_POOLING_MAX  "Output_Images/Pooling/img0_pooling_max.png"
-#define OUTPUT_IMAGE_1_POOLING_MAX  "Output_Images/Pooling/img1_pooling_max.png"
-#define OUTPUT_IMAGE_2_POOLING_MAX  "Output_Images/Pooling/img2_pooling_max.png"
-#define OUTPUT_IMAGE_3_POOLING_MAX  "Output_Images/Pooling/img3_pooling_max.png"
-#define OUTPUT_IMAGE_4_POOLING_MAX  "Output_Images/Pooling/img4_pooling_max.png"
-#define OUTPUT_IMAGE_5_POOLING_MAX  "Output_Images/Pooling/img5_pooling_max.png"
-#define OUTPUT_IMAGE_6_POOLING_MAX  "Output_Images/Pooling/img6_pooling_max.png"
-#define OUTPUT_IMAGE_7_POOLING_MAX  "Output_Images/Pooling/img7_pooling_max.png"
-#define OUTPUT_IMAGE_8_POOLING_MAX  "Output_Images/Pooling/img8_pooling_max.png"
-#define OUTPUT_IMAGE_9_POOLING_MAX  "Output_Images/Pooling/img9_pooling_max.png"
-
-// Hard coded the output files for min pooling
-#define OUTPUT_IMAGE_0_POOLING_MIN  "Output_Images/Pooling/img0_pooling_min.png"
-#define OUTPUT_IMAGE_1_POOLING_MIN  "Output_Images/Pooling/img1_pooling_min.png"
-#define OUTPUT_IMAGE_2_POOLING_MIN  "Output_Images/Pooling/img2_pooling_min.png"
-#define OUTPUT_IMAGE_3_POOLING_MIN  "Output_Images/Pooling/img3_pooling_min.png"
-#define OUTPUT_IMAGE_4_POOLING_MIN  "Output_Images/Pooling/img4_pooling_min.png"
-#define OUTPUT_IMAGE_5_POOLING_MIN  "Output_Images/Pooling/img5_pooling_min.png"
-#define OUTPUT_IMAGE_6_POOLING_MIN  "Output_Images/Pooling/img6_pooling_min.png"
-#define OUTPUT_IMAGE_7_POOLING_MIN  "Output_Images/Pooling/img7_pooling_min.png"
-#define OUTPUT_IMAGE_8_POOLING_MIN  "Output_Images/Pooling/img8_pooling_min.png"
-#define OUTPUT_IMAGE_9_POOLING_MIN  "Output_Images/Pooling/img9_pooling_min.png"
-
-void processImageGray(char *inputFile, char *outputFile, int imgCounter);       // Opens the image, starts the convertion function and writes the output image
-void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height);    // Converts the image to grayscale
-
-void processImageConvolve(char *inputFile, char *outputFile, int imgCounter);   // Opens the image, starts the convolution and writes the output file
-void convolveImage(unsigned char *imageRGBA, int width, int height);            // Convolutes image
 
 typedef struct Pixel
 {
     unsigned char r, g, b, a;
 } Pixel;
 
+void convertImageToGrayCpu(unsigned char *originalImage, unsigned char *ImageDataGrayscale, int width, int height);
+void convolveImage(unsigned char *imageDataGrayscale, unsigned char *imageDataConvolution, int width, int height);
+// Add function prototypes for min and max pooling here
+
 int main()
 {
-    int imgCounter = 1;
     clock_t timer_start, timer_end;
-
-    timer_start = clock(); // start the timer
-
-    processImageGray(INPUT_IMAGE_0, OUTPUT_IMAGE_0, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_0, OUTPUT_IMAGE_0_CONVOLVE, imgCounter);
-    imgCounter++;
+    timer_start = clock(); // Start the timer
     
-    processImageGray(INPUT_IMAGE_1, OUTPUT_IMAGE_1, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_1, OUTPUT_IMAGE_1_CONVOLVE, imgCounter);
-    imgCounter++;
+    for(int i = 0; i < 10; i++)
+    {
+        char inputImage[32] = "Images/img";
+        char outputImageConvolution[32] = "Output_Images/Convolution/img";
+        char outputImagePoolingMax[32] = "Output_Images/Pooling/imgMax";
+        char outputImagePoolingMin[32] = "Output_Images/Pooling/imgMin";
+        char imageNumber[3];
+        
+        // Make a complete path for the input (inputImage + imageNumber + extention)
+        sprintf(imageNumber, "%d", i); // Get the number of the current iteration and convert it to char imageNumber
+        strcat(inputImage, imageNumber);
+        strcat(inputImage, ".png");
 
-    processImageGray(INPUT_IMAGE_2, OUTPUT_IMAGE_2, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_2, OUTPUT_IMAGE_2_CONVOLVE, imgCounter);
-    imgCounter++;
+        ////////////////
+        // Open Image //
+        ////////////////
+        // Open the image and allocate memory for each process
+        int width, height, componentCount;
+        printf("Loading %s.\r\n", inputImage);
+        unsigned char *originalImage = stbi_load(inputImage, &width, &height, &componentCount, 4);
+        unsigned char *imageDataGrayscale = (unsigned char *)malloc(width * height * 4);
+        unsigned char *imageDataConvolution = (unsigned char *)malloc(width * height * 4);
+        // Add memory allocation for *imageDataMinPooling here
+        // Add memory allocation for *imageDataMaxPooling here
 
-    processImageGray(INPUT_IMAGE_3, OUTPUT_IMAGE_3, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_3, OUTPUT_IMAGE_3_CONVOLVE, imgCounter);
-    imgCounter++;
+        if(!originalImage)
+        {
+            printf("Failed to open image!\r\n");
+            stbi_image_free(originalImage);
+            free(imageDataGrayscale);
+            free(imageDataConvolution);
+            // Free memory from imageDataMinPooling
+            // Free memory from imageDataMaxPooling
+            return -1;
+        }
 
-    processImageGray(INPUT_IMAGE_4, OUTPUT_IMAGE_4, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_4, OUTPUT_IMAGE_4_CONVOLVE, imgCounter);
-    imgCounter++;
+        if (width % 32 || height % 32)
+        {
+            // NOTE: Leaked memory of "imageData"
+            printf("Width and/or Height is not dividable by 32!\r\n");
+            stbi_image_free(originalImage);
+            free(imageDataGrayscale);
+            free(imageDataConvolution);
+            // Free memory from imageDataMinPooling
+            // Free memory from imageDataMaxPooling
+            return -1;
+        }
 
-    processImageGray(INPUT_IMAGE_5, OUTPUT_IMAGE_5, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_5, OUTPUT_IMAGE_5_CONVOLVE, imgCounter);
-    imgCounter++;
+        printf("Done\r\n");
+        ///////////////////////
+        // Convert Grayscale //
+        ///////////////////////
+        // Convert image to grayscale on CPU
+        printf("Processing image grayscale.\r\n");
+        convertImageToGrayCpu(originalImage, imageDataGrayscale, width, height);
+        printf("Done\r\n");
 
-    processImageGray(INPUT_IMAGE_6, OUTPUT_IMAGE_6, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_6, OUTPUT_IMAGE_6_CONVOLVE, imgCounter);
-    imgCounter++;
+        ////////////////////
+        // Convolve image //
+        ////////////////////
+        // Make a complete path for the convolved image (outputImage convolution + imageNumber + extention)
+        strcat(outputImageConvolution, imageNumber);
+        strcat(outputImageConvolution, ".png");
 
-    processImageGray(INPUT_IMAGE_7, OUTPUT_IMAGE_7, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_7, OUTPUT_IMAGE_7_CONVOLVE, imgCounter);
-    imgCounter++;
+        // Convolve the image on CPU
+        printf("Convolving image.\r\n");
+        convolveImage(imageDataGrayscale, imageDataConvolution, width, height);
+        printf("Done\r\n");
 
-    processImageGray(INPUT_IMAGE_8, OUTPUT_IMAGE_8, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_8, OUTPUT_IMAGE_8_CONVOLVE, imgCounter);
-    imgCounter++;
+        // Write convolved image to disk
+        printf("Writing image to disk\r\n");
+        stbi_write_png(outputImageConvolution, width - 2, height - 2, 4, imageDataConvolution, 4 * width);
+        printf("Done\r\n");
 
-    processImageGray(INPUT_IMAGE_9, OUTPUT_IMAGE_9, imgCounter);
-    processImageConvolve(OUTPUT_IMAGE_9, OUTPUT_IMAGE_9_CONVOLVE, imgCounter);
-    
+        /////////////////
+        // Min Pooling //
+        /////////////////
+        // Make a complete path for max pooling
+        sprintf(imageNumber, "%d", i); // Get the number of the current iteration and convert it to char imageNumber
+        strcat(outputImagePoolingMin, imageNumber);
+        strcat(outputImagePoolingMin, ".png");
+
+        /////////////////
+        // Max Pooling //
+        /////////////////
+        sprintf(imageNumber, "%d", i); // Get the number of the current iteration and convert it to char imageNumber
+        strcat(outputImagePoolingMax, imageNumber);
+        strcat(outputImagePoolingMax, ".png");
+
+        /////////////////
+        // Free memory //
+        /////////////////
+        stbi_image_free(originalImage);
+        free(imageDataGrayscale);
+        free(imageDataConvolution);
+        // Free memory from imageDataMinPooling
+        // Free memory from imageDataMaxPooling
+
+        printf("\r\n");
+    }
+
+    ///////////////
+    // End timer //
+    ///////////////
     timer_end = clock(); // end the timer
     double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
     printf("\nProgram time: %.3fs\n", time_spent);
@@ -131,59 +133,17 @@ int main()
 }
 
 /*
-    This function opens the image and reads the hight and width.
-    Then this function checks if the image is supported.
-    After that the "ConvertToGray" function is called.
-    Finally the data is written to a new file.
-*/
-void processImageGray(char *inputFile, char *outputFile, int imgCounter)
-{
-    // Open image
-    int width, height, componentCount;
-    
-    printf("\r\n\r\n");
-    printf("Loading png file... [%d / 10]\r\n", imgCounter);
-    unsigned char *imageData = stbi_load(inputFile, &width, &height, &componentCount, 4);
-    if (!imageData)
-    {
-        printf("Failed to open Image [%d / 10]\r\n", imgCounter);
-        exit(-1);
-    }
-    printf("DONE \r\n");
-
-    // Validate image sizes
-    if (width % 32 || height % 32)
-    {
-        // NOTE: Leaked memory of "imageData"
-        printf("Width and/or Height is not dividable by 32! [%d / 10]\r\n", imgCounter);
-        exit(-1);
-    }
-
-    // Process image on cpu
-    printf("Processing image...: [%d / 10]\r\n", imgCounter);
-    ConvertImageToGrayCpu(imageData, width, height);
-    printf("DONE \r\n");
-
-    // Write image back to disk
-    printf("Writing to disk... [%d / 10]\r\n", imgCounter);
-    stbi_write_png(outputFile, width, height, 4, imageData, 4 * width);
-    printf("Grayscaling img [%d / 10] DONE\r\n", imgCounter);
-    printf("\r\n");
-
-    stbi_image_free(imageData);
-}
-
-/*
-    This function converts the image to grayscale.
-*/
-void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
+ * Converts the input image to grayscale.
+ */
+void convertImageToGrayCpu(unsigned char *originalImage, unsigned char *imageDataGrayscale, int width, int height)
 {
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-            Pixel *ptrPixel = (Pixel *)&imageRGBA[y * width * 4 + 4 * x];
-            unsigned char pixelValue = (unsigned char)(ptrPixel->r * 0.2126f + ptrPixel->g * 0.7152f + ptrPixel->b * 0.0722f);
+            Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[y * width * 4 + 4 * x];
+            Pixel *ptrPixelOriginal = (Pixel *)&originalImage[y * width * 4 + 4 * x];
+            unsigned char pixelValue = (unsigned char)(ptrPixelOriginal->r * 0.2126f + ptrPixelOriginal->g * 0.7152f + ptrPixelOriginal->b * 0.0722f);
             ptrPixel->r = pixelValue;
             ptrPixel->g = pixelValue;
             ptrPixel->b = pixelValue;
@@ -193,81 +153,51 @@ void ConvertImageToGrayCpu(unsigned char *imageRGBA, int width, int height)
 }
 
 /*
-    This function opens the grayscale image and reads the hight and width.
-    Then this function checks if the image is supported.
-    After that the "ConvolveImage" function is called.
-    Finally the data is written to a new file.
-*/
-void processImageConvolve(char *inputFile, char *outputFile, int imgCounter)
+ * Convolves the image
+ */
+void convolveImage(unsigned char *imageDataGrayscale, unsigned char *imageDataConvolution, int width, int height)
 {
-    // Open image
-    int width, height, componentCount;
+    int kernel[3][3] =
+        {
+            {1, 0, -1},
+            {1, 0, -1},
+            {1, 0, -1}};
 
-    printf("Loading png file... [%d / 10]\r\n", imgCounter);
-    unsigned char *imageData = stbi_load(inputFile, &width, &height, &componentCount, 4);
-    if (!imageData)
-    {
-        printf("Failed to open Image [%d / 10]\r\n", imgCounter);
-        exit(-1);
-    }
-    printf("DONE \r\n");
-
-    // Validate image sizes
-    if (width % 32 || height % 32)
-    {
-        // NOTE: Leaked memory of "imageData"
-        printf("Width and/or Height is not dividable by 32! [%d / 10]\r\n", imgCounter);
-        exit(-1);
-    }
-
-    // Process image on cpu
-    printf("Processing image...: [%d / 10]\r\n", imgCounter);
-    convolveImage(imageData, width, height);
-    printf("DONE \r\n");
-
-    // Write image back to disk
-    printf("Writing to disk... [%d / 10]\r\n", imgCounter);
-    stbi_write_png(outputFile, width, height, 4, imageData, 4 * width);
-    printf("Convolution img [%d / 10] DONE\r\n", imgCounter);
-    printf("\r\n\r\n");
-
-    stbi_image_free(imageData);
-}
-
-/*
-    This function convolves the image.
-*/
-void convolveImage(unsigned char *imageRGBA, int width, int height)
-{
-    int tempPixel[3][3] = {0};
-    int convolveMatrix[3][3] = 
-    {
-        1, 0, -1,
-        1, 0, -1,
-        1, 0, -1
-    };
+    int pixels[3][3] = {0}; // Stores the temp value of each pixel that has been multiplied by the kernel
+    int finalPixel = 0; // Stores the sum of all the calculated pixels in the kernel
 
     for (int y = 0; y < height - 2; y++)
     {
         for (int x = 0; x < width - 2; x++)
         {
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + i * 4];
-                tempPixel[0][i] = ptrPixel->r * convolveMatrix[0][i];
+                Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[(y * width * 4 + 4 * x) + i * 4]; // Gets the top left pixel of the image in the first iteration
+
+                pixels[0][i] = ptrPixel->r * kernel[0][i];
             }
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + width * 4 + i * 4];
-                tempPixel[1][i] = ptrPixel->r * convolveMatrix[1][i];
+                Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[(y * width * 4 + 4 * x) + width * 4 + i * 4]; // Gets the first pixel of the second row in the first iteration
+
+                pixels[1][i] = ptrPixel->r * kernel[1][i];
             }
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
-                Pixel *ptrPixel = (Pixel *)&imageRGBA[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4];
-                tempPixel[2][i] = ptrPixel->r * convolveMatrix[2][i];
+                Pixel *ptrPixel = (Pixel *)&imageDataGrayscale[(y * width * 4 + 4 * x) + (2 * width * 4) + i * 4]; // Gets the first pixel of the third row in the first iteration
+
+                pixels[2][i] = ptrPixel->r * kernel[2][i];
             }
+
+            finalPixel = (pixels[0][0] + pixels[0][1] + pixels[0][2] + pixels[1][0] + pixels[1][1] + pixels[1][2] + pixels[2][0] + pixels[2][1] + pixels[2][2]) / 9; 
+
+            Pixel *ptrPixel = (Pixel *)&imageDataConvolution[(y * width * 4 + 4 * x)];
+            ptrPixel->r = finalPixel;
+            ptrPixel->g = finalPixel;
+            ptrPixel->b = finalPixel;
+            ptrPixel->a = 255;
         }
     }
 }
