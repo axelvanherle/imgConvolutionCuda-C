@@ -88,11 +88,13 @@ int main(int argc, char **argv)
     // Process image on cpu
     printf("Processing image grayscale\r\n");
     ConvertImageToGrayCpu<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(originalImageDevice, imageDataGrayscaleDevice, width, height);
+    cudaDeviceSynchronize();
     printf("Done\r\n");
 
     // Process image on cpu
     printf("Processing image convolution\r\n");
     convolveImage<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(imageDataGrayscaleDevice, imageDataConvolutionDevice, width, height);
+    cudaDeviceSynchronize();
     printf("Done\r\n");
 
 	cudaMemcpy(imageDataConvolution, imageDataConvolutionDevice, memorySize, cudaMemcpyDeviceToHost);
@@ -104,6 +106,7 @@ int main(int argc, char **argv)
 
     printf("Processing image minimum pooling\r\n");
     minPooling<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(originalImageDevice, imageDataMinPoolingDevice, width, height);
+    cudaDeviceSynchronize();
     printf("Done\r\n");
 
 	cudaMemcpy(imageDataMinPooling, imageDataMinPoolingDevice, memorySize, cudaMemcpyDeviceToHost);
@@ -116,6 +119,7 @@ int main(int argc, char **argv)
 
     printf("Processing image maximum pooling\r\n");
     maxPooling<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(originalImage, imageDataMaxPoolingDevice, width, height);
+    cudaDeviceSynchronize();
     printf("Done\r\n");
 
 	cudaMemcpy(imageDataMaxPooling, imageDataMaxPoolingDevice, memorySize, cudaMemcpyDeviceToHost);
