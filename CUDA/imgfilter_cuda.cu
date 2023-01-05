@@ -10,9 +10,6 @@
 
 #define INPUT_IMAGE "Images/img_9.png"
 
-#define NUM_BLOCKS  1
-#define THREADS_PER_BLOCK 256
-
 typedef struct Pixel
 {
     unsigned char r, g, b, a;
@@ -28,41 +25,73 @@ int main(int argc, char **argv)
     clock_t timer_start, timer_end;
     timer_start = clock();
 
+    int deviceId;
+    int numberOfSMs;
+
+    cudaGetDevice(&deviceId);
+    cudaDeviceGetAttribute(&numberOfSMs, cudaDevAttrMultiProcessorCount, deviceId);
+
+    size_t threadsPerBlock = 256;
+    size_t numberOfBlocks = 32 * numberOfSMs;
+
+    cudaStream_t stream0, stream1, stream2, stream3, stream4, stream5, stream6, stream7, stream8, stream9;
+
+    cudaStreamCreate(&stream0);
+    cudaStreamCreate(&stream1);
+    cudaStreamCreate(&stream2);
+    cudaStreamCreate(&stream3);
+    cudaStreamCreate(&stream4);
+    cudaStreamCreate(&stream5);
+    cudaStreamCreate(&stream6);
+    cudaStreamCreate(&stream7);
+    cudaStreamCreate(&stream8);
+    cudaStreamCreate(&stream9);
+
     // Open image
-    int width, height, componentCount;
     printf("Loading png file\r\n");
-    unsigned char *originalImage = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
-    unsigned char *imageDataGrayscale = (unsigned char *)malloc(width * height * 4);            // Saves grayscale image
-    unsigned char *imageDataConvolution = (unsigned char *)malloc(width * height * 4);          // Saves output image
-    unsigned char *imageDataMinPooling = (unsigned char *)malloc(width * height * 4);           // Saves Min pooling image
-    unsigned char *imageDataMaxPooling = (unsigned char *)malloc(width * height * 4);           // Saves Max pooling image
+
+    int width, height, componentCount;
+
+    unsigned char *originalImageCPU = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
+    unsigned char *originalImage;
+    unsigned char *imageDataGrayscale;            // Saves grayscale image
+    unsigned char *imageDataConvolution;          // Saves output image
+    unsigned char *imageDataMinPooling;           // Saves Min pooling image
+    unsigned char *imageDataMaxPooling;           // Saves Max pooling image
+
+    int size = width * height * 4;
+
+    cudaMallocManaged((unsigned char **)&originalImage, size);
+    cudaMallocManaged((unsigned char **)&imageDataGrayscale, size);
+    cudaMallocManaged((unsigned char **)&imageDataConvolution, size);
+    cudaMallocManaged((unsigned char **)&imageDataMinPooling, size);
+    cudaMallocManaged((unsigned char **)&imageDataMaxPooling, size);
+
+    cudaMemPrefetchAsync(originalImage, size, deviceId);
+    cudaMemPrefetchAsync(imageDataGrayscale, size, deviceId);
+    cudaMemPrefetchAsync(imageDataConvolution, size, deviceId);
+    cudaMemPrefetchAsync(imageDataMinPooling, size, deviceId);
+    cudaMemPrefetchAsync(imageDataMaxPooling, size, deviceId);
+
+    cudaMemcpy(originalImage, originalImageCPU, size, cudaMemcpyHostToDevice);
 
 	// Build output filename
     const char *fileNameOutConvolution = "Output_Images/Convolution/OutputConvolution.png";
     const char *fileNameOutMinPooling = "Output_Images/Pooling/OutputMinPooling.png";
     const char *fileNameOutMaxPooling = "Output_Images/Pooling/OutputMaxPooling.png";
 
-	size_t memorySize = width * height * 4;
-
     if (!originalImage)
     {
         printf("Failed to open Image\r\n");
-        stbi_image_free(originalImage);
-        free(imageDataGrayscale);
-        free(imageDataConvolution);
-        free(imageDataMinPooling);
-        free(imageDataMaxPooling);
+        stbi_image_free(originalImageCPU);
+        cudaFree(originalImage);
+		cudaFree(imageDataGrayscale);
+		cudaFree(imageDataConvolution);
+		cudaFree(imageDataMinPooling);
+		cudaFree(imageDataMaxPooling);
+
         return -1;
     }
-
-	unsigned char *originalImageDevice, *imageDataGrayscaleDevice, *imageDataConvolutionDevice, *imageDataMinPoolingDevice, *imageDataMaxPoolingDevice;
-	cudaMalloc(&originalImageDevice, memorySize);
-	cudaMalloc(&imageDataGrayscaleDevice, memorySize);
-	cudaMalloc(&imageDataConvolutionDevice, memorySize);
-	cudaMalloc(&imageDataMinPoolingDevice, memorySize);
-	cudaMalloc(&imageDataMaxPoolingDevice, memorySize);
-
-	cudaMemcpy(originalImageDevice, originalImage, memorySize, cudaMemcpyHostToDevice);
 
     printf("Done\r\n");
 
@@ -71,13 +100,9 @@ int main(int argc, char **argv)
     {
         // NOTE: Leaked memory of "imageDataGrayscale"
         printf("Width and/or Height is not dividable by 32!\r\n");
-        stbi_image_free(originalImage);
-        free(imageDataGrayscale);
-        free(imageDataConvolution);
-        free(imageDataMinPooling);
-        free(imageDataMaxPooling);
-		cudaFree(originalImageDevice);
-		cudaFree(imageDataGrayscaleDevice);
+        stbi_image_free(originalImageCPU);
+		cudaFree(originalImage);
+		cudaFree(imageDataGrayscale);
 		cudaFree(imageDataConvolution);
 		cudaFree(imageDataMinPooling);
 		cudaFree(imageDataMaxPooling);
@@ -87,17 +112,15 @@ int main(int argc, char **argv)
 
     // Process image on cpu
     printf("Processing image grayscale\r\n");
-    ConvertImageToGrayCpu<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(originalImageDevice, imageDataGrayscaleDevice, width, height);
+    ConvertImageToGrayCpu<<<numberOfBlocks, threadsPerBlock>>>(originalImage, imageDataGrayscale, width, height);
     cudaDeviceSynchronize();
     printf("Done\r\n");
 
     // Process image on cpu
     printf("Processing image convolution\r\n");
-    convolveImage<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(imageDataGrayscaleDevice, imageDataConvolutionDevice, width, height);
+    convolveImage<<<numberOfBlocks, threadsPerBlock>>>(imageDataGrayscale, imageDataConvolution, width, height);
     cudaDeviceSynchronize();
     printf("Done\r\n");
-
-	cudaMemcpy(imageDataConvolution, imageDataConvolutionDevice, memorySize, cudaMemcpyDeviceToHost);
 
     // Write image back to disk
     printf("Writing convolved png to disk\r\n");
@@ -105,41 +128,43 @@ int main(int argc, char **argv)
     printf("Done\r\n");
 
     printf("Processing image minimum pooling\r\n");
-    minPooling<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(originalImageDevice, imageDataMinPoolingDevice, width, height);
+    minPooling<<<numberOfBlocks, threadsPerBlock>>>(originalImage, imageDataMinPooling, width, height);
     cudaDeviceSynchronize();
     printf("Done\r\n");
-
-	cudaMemcpy(imageDataMinPooling, imageDataMinPoolingDevice, memorySize, cudaMemcpyDeviceToHost);
 
     // Write image back to disk
     printf("Writing min pooling png to disk\r\n");
     stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * (width / 2));
     printf("Done\r\n");
 
-
     printf("Processing image maximum pooling\r\n");
-    maxPooling<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(originalImage, imageDataMaxPoolingDevice, width, height);
+    maxPooling<<<numberOfBlocks, threadsPerBlock>>>(originalImage, imageDataMaxPooling, width, height);
     cudaDeviceSynchronize();
     printf("Done\r\n");
-
-	cudaMemcpy(imageDataMaxPooling, imageDataMaxPoolingDevice, memorySize, cudaMemcpyDeviceToHost);
 
     // Write image back to disk
     printf("Writing max pooling png to disk\r\n");
     stbi_write_png(fileNameOutMaxPooling, width / 2, height / 2, 4, imageDataMaxPooling, 4 * (width / 2));
     printf("Done\r\n");
 
-    stbi_image_free(originalImage);
-    free(imageDataGrayscale);
-    free(imageDataConvolution);
-    free(imageDataMinPooling);
-    free(imageDataMaxPooling);
+    stbi_image_free(originalImageCPU);
 
-	cudaFree(originalImageDevice);
-	cudaFree(imageDataGrayscaleDevice);
+	cudaFree(originalImage);
+	cudaFree(imageDataGrayscale);
 	cudaFree(imageDataConvolution);
 	cudaFree(imageDataMinPooling);
 	cudaFree(imageDataMaxPooling);
+
+    cudaStreamDestroy(stream0);
+    cudaStreamDestroy(stream1);
+    cudaStreamDestroy(stream2);
+    cudaStreamDestroy(stream3);
+    cudaStreamDestroy(stream4);
+    cudaStreamDestroy(stream5);
+    cudaStreamDestroy(stream6);
+    cudaStreamDestroy(stream7);
+    cudaStreamDestroy(stream8);
+    cudaStreamDestroy(stream9);
 
     timer_end = clock(); // end the timer
     double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
