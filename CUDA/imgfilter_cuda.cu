@@ -294,31 +294,35 @@ __global__ void convolveImage(unsigned char *imageDataGrayscale, unsigned char *
 __global__ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
 {
     int counter = 0;
-    int idx_x = (threadIdx.x + (blockIdx.x * blockDim.x)) + 2;
-    int idx_y = (threadIdx.y + (blockIdx.y * blockDim.y)) + 2;
-    int gridStride = blockDim.x * gridDim.x;
+
     // Iterate over the image in 2x2 blocks
-    // For each channel, find the maximum value in the 2x2 block
-    for (int c = 0; c < 4; c++)
+    for (int y = 0; y < height; y += 2)
     {
-        Pixel *ptrPixelMinPooling = (Pixel *)&minPoolingImage[counter];
-        unsigned char min = 255;
-        for (int dy = 0; dy < 2; dy++)
+        for (int x = 0; x < width; x += 2)
         {
-            for (int dx = 0; dx < 2; dx++)
+            // For each channel, find the maximum value in the 2x2 block
+            for (int c = 0; c < 4; c++)
             {
-                // Calculate the index of the current pixel in the 1D array
-                int index = (idx_x + dy) * width * 4 + (idx_y + dx) * 4 + c;
-                unsigned char value = originalImage[index];
-                min = (value < min) ? value : min;
+                Pixel *ptrPixelMinPooling = (Pixel *)&minPoolingImage[counter];
+                unsigned char min = 255;
+                for (int dy = 0; dy < 2; dy++)
+                {
+                    for (int dx = 0; dx < 2; dx++)
+                    {
+                        // Calculate the index of the current pixel in the 1D array
+                        int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
+                        unsigned char value = originalImage[index];
+                        min = (value < min) ? value : min;
+                    }
+                }
+                // Store the minimum value in the result array
+                ptrPixelMinPooling->r = min;
+                ptrPixelMinPooling->g = min;
+                ptrPixelMinPooling->b = min;
+                ptrPixelMinPooling->a = min;
+                counter++;
             }
         }
-        // Store the minimum value in the result array
-        ptrPixelMinPooling->r = min;
-        ptrPixelMinPooling->g = min;
-        ptrPixelMinPooling->b = min;
-        ptrPixelMinPooling->a = min;
-        counter++;
     }
 }
 
