@@ -8,7 +8,7 @@
 #include "stb_image_write.h"
 #include <time.h>
 
-#define INPUT_IMAGE "Images/img_9.png"
+#define NUMBER_OF_IMAGES 10
 
 typedef struct Pixel
 {
@@ -25,146 +25,198 @@ int main(int argc, char **argv)
     clock_t timer_start, timer_end;
     timer_start = clock();
 
-    int deviceId;
-    int numberOfSMs;
+    size_t threadsPerBlock = 128;
+    size_t numberOfBlocks = 32;
 
-    cudaGetDevice(&deviceId);
-    cudaDeviceGetAttribute(&numberOfSMs, cudaDevAttrMultiProcessorCount, deviceId);
+    cudaStream_t stream[10];
 
-    size_t threadsPerBlock = 256;
-    size_t numberOfBlocks = 32 * numberOfSMs;
-
-    cudaStream_t stream0, stream1, stream2, stream3, stream4, stream5, stream6, stream7, stream8, stream9;
-
-    cudaStreamCreate(&stream0);
-    cudaStreamCreate(&stream1);
-    cudaStreamCreate(&stream2);
-    cudaStreamCreate(&stream3);
-    cudaStreamCreate(&stream4);
-    cudaStreamCreate(&stream5);
-    cudaStreamCreate(&stream6);
-    cudaStreamCreate(&stream7);
-    cudaStreamCreate(&stream8);
-    cudaStreamCreate(&stream9);
-
-    // Open image
-    printf("Loading png file\r\n");
-
-    int width, height, componentCount;
-
-    unsigned char *originalImageCPU = stbi_load(INPUT_IMAGE, &width, &height, &componentCount, 4); // Saves original image
-    unsigned char *originalImage;
-    unsigned char *imageDataGrayscale;            // Saves grayscale image
-    unsigned char *imageDataConvolution;          // Saves output image
-    unsigned char *imageDataMinPooling;           // Saves Min pooling image
-    unsigned char *imageDataMaxPooling;           // Saves Max pooling image
-
-    int size = width * height * 4;
-
-    cudaMallocManaged((unsigned char **)&originalImage, size);
-    cudaMallocManaged((unsigned char **)&imageDataGrayscale, size);
-    cudaMallocManaged((unsigned char **)&imageDataConvolution, size);
-    cudaMallocManaged((unsigned char **)&imageDataMinPooling, size);
-    cudaMallocManaged((unsigned char **)&imageDataMaxPooling, size);
-
-    cudaMemPrefetchAsync(originalImage, size, deviceId);
-    cudaMemPrefetchAsync(imageDataGrayscale, size, deviceId);
-    cudaMemPrefetchAsync(imageDataConvolution, size, deviceId);
-    cudaMemPrefetchAsync(imageDataMinPooling, size, deviceId);
-    cudaMemPrefetchAsync(imageDataMaxPooling, size, deviceId);
-
-    cudaMemcpy(originalImage, originalImageCPU, size, cudaMemcpyHostToDevice);
-
-	// Build output filename
-    const char *fileNameOutConvolution = "Output_Images/Convolution/OutputConvolution.png";
-    const char *fileNameOutMinPooling = "Output_Images/Pooling/OutputMinPooling.png";
-    const char *fileNameOutMaxPooling = "Output_Images/Pooling/OutputMaxPooling.png";
-
-    if (!originalImage)
+    for(int i = 0; i < 10; i++)
     {
-        printf("Failed to open Image\r\n");
-        stbi_image_free(originalImageCPU);
-        cudaFree(originalImage);
-		cudaFree(imageDataGrayscale);
-		cudaFree(imageDataConvolution);
-		cudaFree(imageDataMinPooling);
-		cudaFree(imageDataMaxPooling);
+        cudaStreamCreate(&stream[i]);
+    }
 
-        return -1;
+    printf("Building filepaths\r\n");
+
+    const char *inputFileName[10] = 
+    {
+        "Images/img_0.png", 
+        "Images/img_1.png", 
+        "Images/img_2.png",
+        "Images/img_3.png",
+        "Images/img_4.png",
+        "Images/img_5.png", 
+        "Images/img_6.png", 
+        "Images/img_7.png",
+        "Images/img_8.png",
+        "Images/img_9.png",
+    };
+
+    // Build output filename
+    const char *fileNameOutConvolution[10] = 
+    {
+        "Output_Images/Convolution/OutputConvolution0.png",
+        "Output_Images/Convolution/OutputConvolution1.png",
+        "Output_Images/Convolution/OutputConvolution2.png",
+        "Output_Images/Convolution/OutputConvolution3.png",
+        "Output_Images/Convolution/OutputConvolution4.png",
+        "Output_Images/Convolution/OutputConvolution5.png",
+        "Output_Images/Convolution/OutputConvolution6.png",
+        "Output_Images/Convolution/OutputConvolution7.png",
+        "Output_Images/Convolution/OutputConvolution8.png",
+        "Output_Images/Convolution/OutputConvolution9.png",
+    };
+
+    const char *fileNameOutMinPooling[10] = 
+    {
+        "Output_Images/Pooling/OutputMinPooling0.png",
+        "Output_Images/Pooling/OutputMinPooling1.png",
+        "Output_Images/Pooling/OutputMinPooling2.png",
+        "Output_Images/Pooling/OutputMinPooling3.png",
+        "Output_Images/Pooling/OutputMinPooling4.png",
+        "Output_Images/Pooling/OutputMinPooling5.png",
+        "Output_Images/Pooling/OutputMinPooling6.png",
+        "Output_Images/Pooling/OutputMinPooling7.png",
+        "Output_Images/Pooling/OutputMinPooling8.png",
+        "Output_Images/Pooling/OutputMinPooling9.png",
+    };
+
+    const char *fileNameOutMaxPooling[10] = 
+    {
+        "Output_Images/Pooling/OutputMaxPooling0.png",
+        "Output_Images/Pooling/OutputMaxPooling1.png",
+        "Output_Images/Pooling/OutputMaxPooling2.png",
+        "Output_Images/Pooling/OutputMaxPooling3.png",
+        "Output_Images/Pooling/OutputMaxPooling4.png",
+        "Output_Images/Pooling/OutputMaxPooling5.png",
+        "Output_Images/Pooling/OutputMaxPooling6.png",
+        "Output_Images/Pooling/OutputMaxPooling7.png",
+        "Output_Images/Pooling/OutputMaxPooling8.png",
+        "Output_Images/Pooling/OutputMaxPooling9.png",
+    };
+
+    int width[10], height[10], componentCount[10], size[10];
+
+    unsigned char *originalImageHost[10]; 
+    unsigned char *imageDataConvolutionHost[10];    // Saves output image   
+    unsigned char *imageDataMinPoolingHost[10];     // Saves Min pooling image    
+    unsigned char *imageDataMaxPoolingHost[10];     // Saves Max pooling image
+    unsigned char *originalImage[10];               // Saves the original image on host
+    unsigned char *imageDataGrayscale[10];          // Saves the grayscale image on device
+    unsigned char *imageDataConvolution[10];        // Saves the convolved image
+    unsigned char *imageDataMinPooling[10];         // Saves the min pooled image
+    unsigned char *imageDataMaxPooling[10];          // Saves the max pooled image
+
+    printf("Done\r\n");
+
+    printf("Loading png files\r\n");
+
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        originalImageHost[i] = stbi_load(inputFileName[i], &width[i], &height[i], &componentCount[i], 4);
+
+        size[i] = height[i] * width[i] * 4;
+
+        // Saves output image            
+        imageDataConvolutionHost[i] = (unsigned char *)malloc(size[i]);
+
+        // Saves Min pooling image    
+        imageDataMinPoolingHost[i] = (unsigned char *)malloc(size[i]);
+
+        // Saves Max pooling image
+        imageDataMaxPoolingHost[i] = (unsigned char *)malloc(size[i]);   
+
+        cudaMalloc(&originalImage[i], size[i]);
+        cudaMalloc(&imageDataGrayscale[i], size[i]);
+        cudaMalloc(&imageDataConvolution[i], size[i]);
+        cudaMalloc(&imageDataMinPooling[i], size[i]);
+        cudaMalloc(&imageDataMaxPooling[i], size[i]);
+
+        cudaMemcpy(originalImage[i], originalImageHost[i], size[i], cudaMemcpyHostToDevice);
     }
 
     printf("Done\r\n");
 
-    // Validate image sizes
-    if (width % 32 || height % 32)
+    // Process grayscale
+    printf("Processing images grayscale\r\n");
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
-        // NOTE: Leaked memory of "imageDataGrayscale"
-        printf("Width and/or Height is not dividable by 32!\r\n");
-        stbi_image_free(originalImageCPU);
-		cudaFree(originalImage);
-		cudaFree(imageDataGrayscale);
-		cudaFree(imageDataConvolution);
-		cudaFree(imageDataMinPooling);
-		cudaFree(imageDataMaxPooling);
-
-        return -1;
+        ConvertImageToGrayCpu<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataGrayscale[i], width[i], height[i]);
     }
-
-    // Process image on cpu
-    printf("Processing image grayscale\r\n");
-    ConvertImageToGrayCpu<<<numberOfBlocks, threadsPerBlock>>>(originalImage, imageDataGrayscale, width, height);
     cudaDeviceSynchronize();
     printf("Done\r\n");
 
-    // Process image on cpu
+    // Process convolution
     printf("Processing image convolution\r\n");
-    convolveImage<<<numberOfBlocks, threadsPerBlock>>>(imageDataGrayscale, imageDataConvolution, width, height);
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        convolveImage<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(imageDataGrayscale[i], imageDataConvolution[i], width[i], height[i]);
+    }
     cudaDeviceSynchronize();
     printf("Done\r\n");
+
+    // Process min pooling
+    printf("Processing images minimum pooling\r\n");
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        minPooling<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataMinPooling[i], width[i], height[i]);
+    }
+    cudaDeviceSynchronize();
+    printf("Done\r\n");
+
+    // Process max pooling
+    printf("Processing image maximum pooling\r\n");
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        maxPooling<<<numberOfBlocks, threadsPerBlock>>>(originalImage[i], imageDataMaxPooling[i], width[i], height[i]);
+        cudaDeviceSynchronize();
+    }
+    printf("Done\r\n");
+    
+    // Writing Convolved images
 
     // Write image back to disk
     printf("Writing convolved png to disk\r\n");
-    stbi_write_png(fileNameOutConvolution, width - 2, height - 2, 4, imageDataConvolution, 4 * width);
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        cudaMemcpy(imageDataConvolutionHost[i], imageDataConvolution[i], size[i], cudaMemcpyDeviceToHost);
+        stbi_write_png(fileNameOutConvolution[i], width[i] - 2, height[i] - 2, 4, imageDataConvolutionHost[i], 4 * width[i]);
+    }
     printf("Done\r\n");
-
-    printf("Processing image minimum pooling\r\n");
-    minPooling<<<numberOfBlocks, threadsPerBlock>>>(originalImage, imageDataMinPooling, width, height);
-    cudaDeviceSynchronize();
-    printf("Done\r\n");
-
-    // Write image back to disk
+    
+    // Writing min pooled images
     printf("Writing min pooling png to disk\r\n");
-    stbi_write_png(fileNameOutMinPooling, width / 2, height / 2, 4, imageDataMinPooling, 4 * (width / 2));
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        cudaMemcpy(imageDataMinPoolingHost[i], imageDataMinPooling[i], size[i], cudaMemcpyDeviceToHost);
+        stbi_write_png(fileNameOutMinPooling[i], width[i] / 2, height[i] / 2, 4, imageDataMinPoolingHost[i], 4 * (width[i] / 2));
+    }
     printf("Done\r\n");
 
-    printf("Processing image maximum pooling\r\n");
-    maxPooling<<<numberOfBlocks, threadsPerBlock>>>(originalImage, imageDataMaxPooling, width, height);
-    cudaDeviceSynchronize();
-    printf("Done\r\n");
-
-    // Write image back to disk
+    // Writing max pooled images
     printf("Writing max pooling png to disk\r\n");
-    stbi_write_png(fileNameOutMaxPooling, width / 2, height / 2, 4, imageDataMaxPooling, 4 * (width / 2));
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        cudaMemcpy(imageDataMaxPoolingHost[i], imageDataMaxPooling[i], size[i], cudaMemcpyDeviceToHost);
+        stbi_write_png(fileNameOutMaxPooling[i], width[i] / 2, height[i] / 2, 4, imageDataMaxPoolingHost[i], 4 * (width[i] / 2));
+    }
     printf("Done\r\n");
 
-    stbi_image_free(originalImageCPU);
+    // Free memory and destroy streams
+    for(int i = 0; i < NUMBER_OF_IMAGES; i++)
+    {
+        stbi_image_free(originalImageHost[i]);
+        
+        free(imageDataConvolutionHost[i]);
+        free(imageDataMinPoolingHost[i]);
+        free(imageDataMaxPoolingHost[i]);
 
-	cudaFree(originalImage);
-	cudaFree(imageDataGrayscale);
-	cudaFree(imageDataConvolution);
-	cudaFree(imageDataMinPooling);
-	cudaFree(imageDataMaxPooling);
+        cudaFree(originalImage[i]);
+        cudaFree(imageDataConvolution[i]);
+        cudaFree(imageDataMinPooling[i]);
+        cudaFree(imageDataMaxPooling[i]);
 
-    cudaStreamDestroy(stream0);
-    cudaStreamDestroy(stream1);
-    cudaStreamDestroy(stream2);
-    cudaStreamDestroy(stream3);
-    cudaStreamDestroy(stream4);
-    cudaStreamDestroy(stream5);
-    cudaStreamDestroy(stream6);
-    cudaStreamDestroy(stream7);
-    cudaStreamDestroy(stream8);
-    cudaStreamDestroy(stream9);
+        cudaStreamDestroy(stream[i]);
+    }
 
     timer_end = clock(); // end the timer
     double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
@@ -277,11 +329,13 @@ __global__ void minPooling(unsigned char *originalImage, unsigned char *minPooli
 __global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height)
 {
     int counter = 0;
+    int idx = (threadIdx.x + blockIdx.x * blockDim.x) * 4;
+	int gridStride = blockDim.x * gridDim.x;
 
     // Iterate over the image in 2x2 blocks
     for (int y = 0; y < height; y += 2)
     {
-        for (int x = 0; x < width; x += 2)
+        for (int x = idx; x < width; x += 2)
         {
             // For each channel, find the maximum value in the 2x2 block
             for (int c = 0; c < 4; c++)
