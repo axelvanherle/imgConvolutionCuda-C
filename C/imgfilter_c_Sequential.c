@@ -85,7 +85,7 @@ int main()
 
         // Write convolved image to disk
         printf("Writing image to disk\r\n");
-        stbi_write_png(outputImageConvolution, width, height, 4, imageDataTest, 4 * width);
+        stbi_write_png(outputImageConvolution, width - 2, height - 2, 4, imageDataTest, 4 * width);
         printf("Done\r\n");
 
         /////////////////

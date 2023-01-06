@@ -8,7 +8,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-#define NUMBER_OF_IMAGES 2
+#define NUMBER_OF_IMAGES 10
 
 typedef struct Pixel
 {
@@ -22,7 +22,7 @@ __global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPooli
 
 int main(int argc, char **argv)
 {
-    clock_t timer_start, timer_end;
+    clock_t timer_start, timer_end, timer_start_process, timer_end_process;
     timer_start = clock();
 
     size_t threadsPerBlock = 128;
@@ -136,6 +136,8 @@ int main(int argc, char **argv)
 
     printf("Done\r\n");
 
+    timer_start_process = clock();
+
     // Process grayscale
     printf("Processing images grayscale\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
@@ -158,7 +160,10 @@ int main(int argc, char **argv)
     printf("Processing images minimum pooling\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
-        minPooling<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataMinPooling[i], width[i], height[i]);
+        dim3 gridDim(width[i] / 2, height[i] / 2);
+        dim3 blockDim(2, 2);
+        // minPooling<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataMinPooling[i], width[i], height[i]);
+        minPooling<<<gridDim, blockDim, i, stream[i]>>>(originalImage[i], imageDataMinPooling[i], width[i], height[i]);
     }
     cudaDeviceSynchronize();
     printf("Done\r\n");
@@ -167,17 +172,21 @@ int main(int argc, char **argv)
     printf("Processing image maximum pooling\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
-        maxPooling<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataMaxPooling[i], width[i], height[i]);
-        cudaDeviceSynchronize();
+        dim3 gridDim(width[i] / 2, height[i] / 2);
+        dim3 blockDim(2, 2);
+        // maxPooling<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataMaxPooling[i], width[i], height[i]);
+        maxPooling<<<gridDim, blockDim, i, stream[i]>>>(originalImage[i], imageDataMaxPooling[i], width[i], height[i]);
     }
+    cudaDeviceSynchronize();
     printf("Done\r\n");
 
-    // Writing Convolved images
+    timer_end_process = clock();
 
-    // Write image back to disk
+    // Writing Convolved images
     printf("Writing convolved png to disk\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
+        printf("Image %d of %d\r\n", i + 1, 10);
         cudaMemcpy(imageDataConvolutionHost[i], imageDataConvolution[i], size[i], cudaMemcpyDeviceToHost);
         stbi_write_png(fileNameOutConvolution[i], width[i] - 2, height[i] - 2, 4, imageDataConvolutionHost[i], 4 * width[i]);
     }
@@ -187,6 +196,7 @@ int main(int argc, char **argv)
     printf("Writing min pooling png to disk\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
+        printf("Image %d of %d\r\n", i + 1, 10);
         cudaMemcpy(imageDataMinPoolingHost[i], imageDataMinPooling[i], size[i], cudaMemcpyDeviceToHost);
         stbi_write_png(fileNameOutMinPooling[i], width[i] / 2, height[i] / 2, 4, imageDataMinPoolingHost[i], 4 * (width[i] / 2));
     }
@@ -196,6 +206,7 @@ int main(int argc, char **argv)
     printf("Writing max pooling png to disk\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
+        printf("Image %d of %d\r\n", i + 1, 10);
         cudaMemcpy(imageDataMaxPoolingHost[i], imageDataMaxPooling[i], size[i], cudaMemcpyDeviceToHost);
         stbi_write_png(fileNameOutMaxPooling[i], width[i] / 2, height[i] / 2, 4, imageDataMaxPoolingHost[i], 4 * (width[i] / 2));
     }
@@ -220,7 +231,10 @@ int main(int argc, char **argv)
 
     timer_end = clock(); // end the timer
     double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
-    printf("\nProgram time: %.3fs\n", time_spent);
+    printf("\nTotal program time: %.3fs\n", time_spent);
+
+    double time_spent_process = (double)(timer_end_process - timer_start_process) / CLOCKS_PER_SEC;
+    printf("\nProcessing time (CUDA Kernels): %.3fs\n", time_spent_process);
 
     return 0;
 }
@@ -293,80 +307,64 @@ __global__ void convolveImage(unsigned char *imageDataGrayscale, unsigned char *
 
 __global__ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
 {
-    // Declare shared memory for the 2x2 block of pixels
-    __shared__ unsigned char block[2][2];
+    // Calculate the 2D block index
+    int blockY = blockIdx.y;
+    int blockX = blockIdx.x;
 
-    // Calculate the 2D index of the thread within the grid
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    // Calculate the starting position of the 2x2 block
+    int y = blockY * 2;
+    int x = blockX * 2;
 
-    // Skip processing pixels that are outside the bounds of the image
-    if (x >= width || y >= height)
+    // Calculate the index of the current pixel in the 1D arrays
+    int indexOut = blockY * width / 2 * 4 + blockX * 4;
+
+    // For each channel, find the minimum value in the 2x2 block
+    for (int c = 0; c < 4; c++)
     {
-        return;
-    }
-
-    // Load the 2x2 block of pixels into shared memory
-    block[threadIdx.y][threadIdx.x] = originalImage[y * width + x];
-
-    // Wait for all threads to finish loading the block
-    __syncthreads();
-
-    // Find the minimum value for each channel in the 2x2 block using a loop and a conditional statement
-    unsigned char minR = 255, minG = 255, minB = 255, minA = 255;
-    for (int dy = 0; dy < 2; dy++)
-    {
-        for (int dx = 0; dx < 2; dx++)
+        unsigned char min = 255;
+        for (int dy = 0; dy < 2; dy++)
         {
-            int index = dy * 2 + dx;
-            minR = (block[index][0] < minR) ? block[index][0] : minR;
-            minG = (block[index][1] < minG) ? block[index][1] : minG;
-            minB = (block[index][2] < minB) ? block[index][2] : minB;
-            minA = (block[index][3] < minA) ? block[index][3] : minA;
-        }
-    }
-
-    // Store the minimum values in the result image
-    minPoolingImage[y * width + x] = minR;
-    minPoolingImage[y * width + x + 1] = minG;
-    minPoolingImage[y * width + x + 2] = minB;
-    minPoolingImage[y * width + x + 3] = 255;
-}
-
-
-
-
-__global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height)
-{
-    int counter = 0;
-
-    // Iterate over the image in 2x2 blocks
-    for (int y = 0; y < height; y += 2)
-    {
-        for (int x = 0; x < width; x += 2)
-        {
-            // For each channel, find the maximum value in the 2x2 block
-            for (int c = 0; c < 4; c++)
+            for (int dx = 0; dx < 2; dx++)
             {
-                Pixel *ptrPixelMaxPooling = (Pixel *)&maxPoolingImage[counter];
-                unsigned char max = 0;
-                for (int dy = 0; dy < 2; dy++)
-                {
-                    for (int dx = 0; dx < 2; dx++)
-                    {
-                        // Calculate the index of the current pixel in the 1D array
-                        int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
-                        unsigned char value = originalImage[index];
-                        max = (value > max) ? value : max;
-                    }
-                }
-                // Store the maximum value in the result array
-                ptrPixelMaxPooling->r = max;
-                ptrPixelMaxPooling->g = max;
-                ptrPixelMaxPooling->b = max;
-                ptrPixelMaxPooling->a = max;
-                counter++;
+                // Calculate the index of the current pixel in the 1D array
+                int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
+                unsigned char value = originalImage[index];
+                min = (value < min) ? value : min;
             }
         }
-    }   
+        // Store the minimum value in the result array
+        minPoolingImage[indexOut + c] = min;
+    }
+}
+
+__global__ void maxPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
+{
+    // Calculate the 2D block index
+    int blockY = blockIdx.y;
+    int blockX = blockIdx.x;
+
+    // Calculate the starting position of the 2x2 block
+    int y = blockY * 2;
+    int x = blockX * 2;
+
+    // Calculate the index of the current pixel in the 1D arrays
+    int indexOut = blockY * width / 2 * 4 + blockX * 4;
+
+    // For each channel, find the minimum value in the 2x2 block
+    for (int c = 0; c < 4; c++)
+    {
+        unsigned char min = 0;
+        for (int dy = 0; dy < 2; dy++)
+        {
+            for (int dx = 0; dx < 2; dx++)
+            {
+                // Calculate the index of the current pixel in the 1D array
+                int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
+                unsigned char value = originalImage[index];
+                min = (value > min) ? value : min;
+            }
+        }
+        // Store the minimum value in the result array
+        minPoolingImage[indexOut + c] = min;
+    }
 }

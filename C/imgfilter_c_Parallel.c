@@ -28,8 +28,6 @@ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, in
 // This function runs all the threads
 void *runThreads(void *vargp)
 {
-    clock_t timer_start, timer_end;
-    timer_start = clock(); // Start the timer
     // Get which thread we are in, and do ++ for the next thread.
     int threadId = threadNumber++;
 
@@ -80,7 +78,7 @@ void *runThreads(void *vargp)
     strcat(outputImageConvolution, ".png");
 
     // Write image back to disk
-    stbi_write_png(outputImageConvolution, width, height, 4, imageDataTest, 4 * width);
+    stbi_write_png(outputImageConvolution, width - 2, height - 2, 4, imageDataTest, 4 * width);
 
     /////////////////
     // Min Pooling //
@@ -112,10 +110,6 @@ void *runThreads(void *vargp)
     free(imageDataTest);
     free(imageDataMinPooling);
     free(imageDataMaxPooling);
-
-    timer_end = clock(); // end the timer
-    double time_spent = (double)(timer_end - timer_start) / CLOCKS_PER_SEC;
-    printf("\n----------\n%s took %.3fs\n----------\n",inputImage, time_spent);
     return NULL;
 }
 
