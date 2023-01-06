@@ -167,7 +167,7 @@ int main(int argc, char **argv)
     printf("Processing image maximum pooling\r\n");
     for (int i = 0; i < NUMBER_OF_IMAGES; i++)
     {
-        maxPooling<<<numberOfBlocks, threadsPerBlock>>>(originalImage[i], imageDataMaxPooling[i], width[i], height[i]);
+        maxPooling<<<numberOfBlocks, threadsPerBlock, i, stream[i]>>>(originalImage[i], imageDataMaxPooling[i], width[i], height[i]);
         cudaDeviceSynchronize();
     }
     printf("Done\r\n");
@@ -329,13 +329,11 @@ __global__ void minPooling(unsigned char *originalImage, unsigned char *minPooli
 __global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height)
 {
     int counter = 0;
-    int idx = (threadIdx.x + blockIdx.x * blockDim.x) * 4;
-    int gridStride = blockDim.x * gridDim.x;
 
     // Iterate over the image in 2x2 blocks
     for (int y = 0; y < height; y += 2)
     {
-        for (int x = idx; x < width; x += 2)
+        for (int x = 0; x < width; x += 2)
         {
             // For each channel, find the maximum value in the 2x2 block
             for (int c = 0; c < 4; c++)
@@ -360,5 +358,5 @@ __global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPooli
                 counter++;
             }
         }
-    }
+    }   
 }
