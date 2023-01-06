@@ -293,36 +293,37 @@ __global__ void convolveImage(unsigned char *imageDataGrayscale, unsigned char *
 
 __global__ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
 {
-    // Calculate the index of the current block
-    int blockX = blockIdx.x;
-    int blockY = blockIdx.y;
-    int blockIndex = blockY * gridDim.x + blockX;
+    int counter = 0;
 
-    // Calculate the starting coordinates of the current block
-    int x = blockX * 2;
-    int y = blockY * 2;
-
-    // Initialize the minimum value for the current block to the maximum possible value
-    unsigned char min = 255;
-
-    // Find the minimum value in the current block
-    for (int dy = 0; dy < 2; dy++)
+    // Iterate over the image in 2x2 blocks
+    for (int y = 0; y < height; y += 2)
     {
-        for (int dx = 0; dx < 2; dx++)
+        for (int x = 0; x < width; x += 2)
         {
-            // Calculate the index of the current pixel in the 1D array
-            int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
-            unsigned char value = originalImage[index];
-            min = (value < min) ? value : min;
+            // For each channel, find the maximum value in the 2x2 block
+            for (int c = 0; c < 4; c++)
+            {
+                Pixel *ptrPixelMinPooling = (Pixel *)&minPoolingImage[counter];
+                unsigned char min = 255;
+                for (int dy = 0; dy < 2; dy++)
+                {
+                    for (int dx = 0; dx < 2; dx++)
+                    {
+                        // Calculate the index of the current pixel in the 1D array
+                        int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
+                        unsigned char value = originalImage[index];
+                        min = (value < min) ? value : min;
+                    }
+                }
+                // Store the minimum value in the result array
+                ptrPixelMinPooling->r = min;
+                ptrPixelMinPooling->g = min;
+                ptrPixelMinPooling->b = min;
+                ptrPixelMinPooling->a = min;
+                counter++;
+            }
         }
     }
-
-    // Store the minimum value in the result array
-    Pixel *ptrPixelMinPooling = (Pixel *)&minPoolingImage[blockIndex];
-    ptrPixelMinPooling->r = min;
-    ptrPixelMinPooling->g = min;
-    ptrPixelMinPooling->b = min;
-    ptrPixelMinPooling->a = min;
 }
 
 __global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height)
