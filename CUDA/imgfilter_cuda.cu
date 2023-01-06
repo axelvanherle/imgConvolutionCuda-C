@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "cuda.h"
 #include "cuda_runtime.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
 #include "stb_image_write.h"
-#include <time.h>
 
-#define NUMBER_OF_IMAGES 10
+#define NUMBER_OF_IMAGES 2
 
 typedef struct Pixel
 {
@@ -293,38 +293,48 @@ __global__ void convolveImage(unsigned char *imageDataGrayscale, unsigned char *
 
 __global__ void minPooling(unsigned char *originalImage, unsigned char *minPoolingImage, int width, int height)
 {
-    int counter = 0;
+    // Declare shared memory for the 2x2 block of pixels
+    __shared__ unsigned char block[2][2];
 
-    // Iterate over the image in 2x2 blocks
-    for (int y = 0; y < height; y += 2)
+    // Calculate the 2D index of the thread within the grid
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    // Skip processing pixels that are outside the bounds of the image
+    if (x >= width || y >= height)
     {
-        for (int x = 0; x < width; x += 2)
+        return;
+    }
+
+    // Load the 2x2 block of pixels into shared memory
+    block[threadIdx.y][threadIdx.x] = originalImage[y * width + x];
+
+    // Wait for all threads to finish loading the block
+    __syncthreads();
+
+    // Find the minimum value for each channel in the 2x2 block using a loop and a conditional statement
+    unsigned char minR = 255, minG = 255, minB = 255, minA = 255;
+    for (int dy = 0; dy < 2; dy++)
+    {
+        for (int dx = 0; dx < 2; dx++)
         {
-            // For each channel, find the maximum value in the 2x2 block
-            for (int c = 0; c < 4; c++)
-            {
-                Pixel *ptrPixelMinPooling = (Pixel *)&minPoolingImage[counter];
-                unsigned char min = 255;
-                for (int dy = 0; dy < 2; dy++)
-                {
-                    for (int dx = 0; dx < 2; dx++)
-                    {
-                        // Calculate the index of the current pixel in the 1D array
-                        int index = (y + dy) * width * 4 + (x + dx) * 4 + c;
-                        unsigned char value = originalImage[index];
-                        min = (value < min) ? value : min;
-                    }
-                }
-                // Store the minimum value in the result array
-                ptrPixelMinPooling->r = min;
-                ptrPixelMinPooling->g = min;
-                ptrPixelMinPooling->b = min;
-                ptrPixelMinPooling->a = min;
-                counter++;
-            }
+            int index = dy * 2 + dx;
+            minR = (block[index][0] < minR) ? block[index][0] : minR;
+            minG = (block[index][1] < minG) ? block[index][1] : minG;
+            minB = (block[index][2] < minB) ? block[index][2] : minB;
+            minA = (block[index][3] < minA) ? block[index][3] : minA;
         }
     }
+
+    // Store the minimum values in the result image
+    minPoolingImage[y * width + x] = minR;
+    minPoolingImage[y * width + x + 1] = minG;
+    minPoolingImage[y * width + x + 2] = minB;
+    minPoolingImage[y * width + x + 3] = 255;
 }
+
+
+
 
 __global__ void maxPooling(unsigned char *originalImage, unsigned char *maxPoolingImage, int width, int height)
 {
