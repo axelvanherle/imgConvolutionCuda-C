@@ -17,7 +17,7 @@ Another example:
 
 The results get saved into another image.
 
-The application also calculates the maximum and average pooling.
+The application also calculates the maximum and minimum pooling.
 
 Example:
 
@@ -25,14 +25,14 @@ Example:
 
 We wrote the application in C with and without CUDA, so we can compare the speed gained.
 
-# Graphs
+# Benchmarks
 
-| Program                  | Time | Low class CPU | Mid class CPU | High Class CPU | AVG Time CPU | Low class GPU | Mid class GPU | High class GPU | AVG GPU |
-|--------------------------|------|---------------|---------------|----------------|--------------|---------------|---------------|----------------|---------|
-| Sequential C (Grayscale) |      | 120,703s      | 92,906s       | 88,091s        | 100,567s     |       n/a        |        n/a       |         n/a       |     n/a   |
-| Parallel C (Grayscale)    |      | 53,192s       | 38,134s       | 36,787s        | 42,704s      |      n/a         |         n/a      |        n/a        |    n/a     |
-| Parallel C (Grayscale + Convolution)    |      | 53,192s       | 38,134s       | 36,787s        | 42,704s      |      n/a         |         n/a      |        n/a        |    n/a     |
-| Parallel C (Grayscale + Convolution)    |      | 53,192s       | 38,134s       | 36,787s        | 42,704s      |      n/a         |         n/a      |        n/a        |    n/a     |
+| Program      |  Time       | 
+|--------------|-------------|
+| Sequential C | 188.987s    |
+| Threads C    | 85.763s     |
+| CUDA Total   | 168.849s    |
+| CUDA Kernels | 0.571s      |
 
 # Sources
 
