@@ -41,3 +41,5 @@ The threads in C is only faster because the files get writen away in these threa
 # Sources
 
 We used the image loader: stb_image.h and the image writer: stb_image_write.h from https://github.com/nothings/stb.
+
+Images are provid by the proffesor of this course, https://github.com/cteqeu/.
