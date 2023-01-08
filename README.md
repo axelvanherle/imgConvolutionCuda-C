@@ -1,10 +1,12 @@
 # imgConvolutionCuda-C
 
-An application written by Sem Kirkels, Nathan Bruggeman and Axel Vanherle in C and using CUDA that manipulates a image using convolution.
+This was an assigment for the course Hardware Accelerated Computing.
+
+An application written by Sem Kirkels, Nathan Bruggeman and Axel Vanherle in C and using CUDA that manipulates a image using convolution, and applies maximum and minimum pooling.
 
 ### What is it?
 
-This application reads 10 images, and processes them using convolution.
+This application reads 10 images, and processes them using convolution, applies maximum and minimum pooling.
 
 The application calculates the 2D Convolution on these images as in following figure:
 
@@ -26,6 +28,8 @@ Example:
 We wrote the application in C with and without CUDA, so we can compare the speed gained.
 
 # Benchmarks
+
+The threads in C is only faster because the files get writen away in these threads aswell. In CUDA it gets done sequential, the theards was a proof of concept that it can be accelerated even more.
 
 | Program      |  Time       | 
 |--------------|-------------|
