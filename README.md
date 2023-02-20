@@ -1,5 +1,9 @@
 # imgConvolutionCuda-C
 
+### Archived because the course is closed, and this task was graded.
+
+To run the code, it relies on having the `stb_image.h` and `stb_image_write.h` in the local dir.
+
 This was an assigment for the course Hardware Accelerated Computing.
 
 An application written by Sem Kirkels, Nathan Bruggeman and Axel Vanherle in C and using CUDA that manipulates a image using convolution, and applies maximum and minimum pooling.
